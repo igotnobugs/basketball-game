@@ -152,6 +152,8 @@ namespace aplimat_final_exam
         private Vector3 RightWind = new Vector3(-0.2f, 0, 0);
         private Vector3 fMeteorFalling = new Vector3(0, -10.0f, 0);
 
+        private float XYratio;
+
 
 
         #endregion
@@ -324,10 +326,10 @@ namespace aplimat_final_exam
 
             #region Controls
             // These controls only available when Ball is not yet thrown
-            if (bBallThrown == false) 
+            if (bBallThrown == false)
             {
                 //Increment Adjuster
-                if (Keyboard.IsKeyDown(Key.Q)) 
+                if (Keyboard.IsKeyDown(Key.Q))
                 { if (fIncrements > 0.03f) fIncrements -= 0.02f; }
                 if (Keyboard.IsKeyDown(Key.E))
                 { fIncrements += 0.02f; }
@@ -335,22 +337,34 @@ namespace aplimat_final_exam
                 //Adjust power and angle using Increments Max 100
                 power = (Math.Truncate(Math.Sqrt((fYModifier * fYModifier) + (fXModifier * fXModifier)) * 100.0) / 100.0);
                 power *= 10;
+                XYratio = fXModifier / fYModifier;
                 if (power < 300)
                 {
+                    
                     if (Keyboard.IsKeyDown(Key.D))
-                    { fXModifier += fIncrements; }
+                    {
+                        fXModifier += fIncrements * XYratio;
+                        //fYModifier += fIncrements / XYratio;
+                    }
                     if (Keyboard.IsKeyDown(Key.W))
-                    { fYModifier += fIncrements; }
+                    {
+                        fXModifier += fIncrements * XYratio;
+                        fYModifier += fIncrements / XYratio;
+                    }
                 }
                 if (Keyboard.IsKeyDown(Key.A))
-                { fXModifier -= fIncrements; }
+                {
+                    fXModifier -= fIncrements * XYratio;
+                    fYModifier += fIncrements * XYratio;
+                }
                 if (Keyboard.IsKeyDown(Key.S))
-                { fYModifier -= fIncrements; }
-                
+                {
+                    fXModifier -= fIncrements * XYratio;
+                    fYModifier -= fIncrements / XYratio;
+                }
             }
-
-            //Play Ball
-            if (Keyboard.IsKeyDown(Key.Space))
+                //Play Ball
+                if (Keyboard.IsKeyDown(Key.Space))
             {
                 if (bSpaceHeld == false)
                 bBallThrown = true;
@@ -405,6 +419,10 @@ namespace aplimat_final_exam
             //Above
             gl.DrawText(5, 600, 1, 0, 0, "Arial", 30, "Score: " + score);
             gl.DrawText(5, 630, 1, 0, 0, "Arial", 15, "Round: " + round);
+            gl.DrawText(5, 660, 1, 0, 0, "Arial", 15, "XY RATIO: " + XYratio);
+
+            //LENGTH OF LINE
+            gl.DrawText(5, 690, 1, 0, 0, "Arial", 15, "LENGTH OF LINE: " + Math.Sqrt( (Math.Pow(fXModifier,2)) + (Math.Pow(fYModifier, 2)) ) ); 
 
             if (bWindy == true)
             {
