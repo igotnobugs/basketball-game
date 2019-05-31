@@ -66,7 +66,6 @@ namespace aplimat_final_exam
             mousePos.x = (float)position.X - (float)Width / 2.0f;
             mousePos.y = -((float)position.Y - (float)Height / 2.0f);
             Console.WriteLine(mousePos.x + " " + mousePos.y);
-
         }
 
         private void ManageKeyPress()
@@ -124,23 +123,14 @@ namespace aplimat_final_exam
         #endregion
 
         #region Variables
+        //Game
         private bool bBallThrown = false;
         private bool bSpaceHeld = false;
         private bool bShowLine = true;
         private bool bWindy = false;
         private bool bMeteorFell = false;
-
-        private float fIncrements = 0.2f;
-        private float fXModifier = 1.0f;
-        private float fYModifier = 1.0f;
-
         private int counter = 360; //Gets reduced
         private int maxCounter = 360; // Used for checking
-
-        //Ball Position
-        private static float BallDefaultX = -40;
-        private static float BallDefaultY = -32;
-
         private int lastround = 0;
         private int round = 1;
         private int score = 0;
@@ -152,7 +142,19 @@ namespace aplimat_final_exam
         private Vector3 RightWind = new Vector3(-0.2f, 0, 0);
         private Vector3 fMeteorFalling = new Vector3(0, -10.0f, 0);
 
-        private float XYratio;
+        //Ball Position
+        private static float BallDefaultX = -40;
+        private static float BallDefaultY = -32;
+
+        //Line and Aiming Variables 
+        private float fLineLength;
+        private float fModLineX = 3;
+        private float fModLineY = 3;
+        private float fIncrements = 0.1f;
+        private float fXModifier = 1.0f;
+        private float fYModifier = 1.0f;
+        private double fAimAngle;
+        private bool bLineButtonPressed = false;
 
 
 
@@ -166,14 +168,13 @@ namespace aplimat_final_exam
             // Clear The Screen And The Depth Buffer
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
 
-            // Move Left And Into The Screen
+            // Move screen back
             gl.LoadIdentity();
             gl.Translate(0.0f, 0.0f, -100.0f);
 
             //Draw All Objects
             gl.Color(0.0, 0.0, 1.5);
             Ball.DrawCircle(gl);
-
             gl.Color(0.0, 0.5, 0.0);
             Ground.Draw(gl);
             gl.Color(0.0, 0.5, 0.5);
@@ -183,6 +184,25 @@ namespace aplimat_final_exam
             gl.Color(0.0, 0.5, 0.5);
             RingEdge.Draw(gl);
             Net.Draw(gl, 50, 50, 50);
+
+            #region Line Draw 
+            //Line Code
+            if (bShowLine == true)
+            {
+                gl.Color(1.0, 0.6, 0.6);
+
+
+                if (bBallThrown == true)
+                {
+                    Line.DrawLine(gl, Ball, (Ball.Velocity.x), (Ball.Velocity.y), 0);
+                }
+                else
+                {
+                    Line.DrawLine(gl, Ball, fModLineX, fModLineY, 0);
+                }
+
+            }
+            #endregion
 
             #region Meteor Fell Score When > 20
             if (score > 20)
@@ -237,34 +257,18 @@ namespace aplimat_final_exam
             }
             #endregion
 
-            #region Line Draw 
-            //Line Code
-            if (bShowLine == true)
-            {
-                gl.Color(1.0, 0.6, 0.6);
-                var LineX = Ball.Velocity.x + fXModifier;
-                var LineY = Ball.Velocity.y + fYModifier;
-                if (bBallThrown == true)
-                {
-                    Line.DrawLine(gl, Ball, (Ball.Velocity.x * 5), (Ball.Velocity.y * 5), 0);
-                }
-                else
-                {
-                    Line.DrawLine(gl, Ball, LineX * 5, LineY * 5, 0);
-                }
-            }
-            #endregion
-
-            #region SANITY CODE
+            #region Ball Thrown Code
             //You pressed Space
             if (bBallThrown == true) {
+
                 counter--;
                 if (counter > maxCounter - 2) {
-                    Ball.Velocity.x = 0 + fXModifier;
-                    Ball.Velocity.y = 0 + fYModifier;
+                    Ball.Velocity.x = fModLineX / 2;
+                    Ball.Velocity.y = fModLineY / 2;
                 }
-                Ball.Velocity.x = (float)(Math.Truncate((double)Ball.Velocity.x * 100.0) / 100.0);
-                Ball.Velocity.y = (float)(Math.Truncate((double)Ball.Velocity.y * 100.0) / 100.0);
+
+                //Ball.Velocity.x = (float)(Math.Truncate((double)Ball.Velocity.x * 100.0) / 100.0);
+                //Ball.Velocity.y = (float)(Math.Truncate((double)Ball.Velocity.y * 100.0) / 100.0);
             }
             #endregion
 
@@ -320,7 +324,6 @@ namespace aplimat_final_exam
                 Ball.Position.y = BallDefaultY;
                 fRandom *= 0;
                 fGaussian *= 0;
-
             }
             #endregion
 
@@ -329,42 +332,59 @@ namespace aplimat_final_exam
             if (bBallThrown == false)
             {
                 //Increment Adjuster
-                if (Keyboard.IsKeyDown(Key.Q))
-                { if (fIncrements > 0.03f) fIncrements -= 0.02f; }
-                if (Keyboard.IsKeyDown(Key.E))
-                { fIncrements += 0.02f; }
+                if (Keyboard.IsKeyDown(Key.Q) && (fIncrements > 0.2))
+                { fIncrements -= 0.1f; }
+                if (Keyboard.IsKeyDown(Key.E) && (fIncrements < 1.0f))
+                { fIncrements += 0.2f; }
 
                 //Adjust power and angle using Increments Max 100
-                power = (Math.Truncate(Math.Sqrt((fYModifier * fYModifier) + (fXModifier * fXModifier)) * 100.0) / 100.0);
+                power = (Math.Truncate(Math.Sqrt((fModLineX * fModLineX) + (fModLineY * fModLineY)) * 100.0) / 100.0);
                 power *= 10;
-                XYratio = fXModifier / fYModifier;
-                if (power < 300)
+
+                //Get length of line
+                if ((!Keyboard.IsKeyDown(Key.D)) || (!Keyboard.IsKeyDown(Key.A)))
                 {
-                    
-                    if (Keyboard.IsKeyDown(Key.D))
-                    {
-                        fXModifier += fIncrements * XYratio;
-                        //fYModifier += fIncrements / XYratio;
-                    }
-                    if (Keyboard.IsKeyDown(Key.W))
-                    {
-                        fXModifier += fIncrements * XYratio;
-                        fYModifier += fIncrements / XYratio;
-                    }
+                    fLineLength = (float)Math.Sqrt((fModLineX * fModLineX) + (fModLineY * fModLineY));
                 }
+
+                if (Keyboard.IsKeyDown(Key.W) && (power < 100))
+                {
+
+                        fAimAngle = Math.Atan((fModLineY) / (fModLineX) );
+                        fModLineX += fIncrements * (float)Math.Cos(fAimAngle);
+                        fModLineY += fIncrements * (float)Math.Sin(fAimAngle);
+                }
+
+                if (Keyboard.IsKeyDown(Key.S) && (power > 10))
+                {
+                    fAimAngle = Math.Atan((fModLineY) / (fModLineX));
+                    fModLineX -= fIncrements * (float)Math.Cos(fAimAngle);
+                    fModLineY -= fIncrements * (float)Math.Sin(fAimAngle);
+                }
+
+                if (Keyboard.IsKeyDown(Key.D))
+                {
+                    fAimAngle = Math.Atan((fModLineY) / (fModLineX));
+                    fAimAngle = (fAimAngle / 3.1415926f) * 180;
+                    fAimAngle -= 1 + fIncrements ;
+                    fAimAngle = (fAimAngle * 3.1415926f) / 180;
+                    fModLineX = fLineLength * (float)Math.Cos(fAimAngle);
+                    fModLineY = fLineLength * (float)Math.Sin(fAimAngle);
+                }
+
                 if (Keyboard.IsKeyDown(Key.A))
                 {
-                    fXModifier -= fIncrements * XYratio;
-                    fYModifier += fIncrements * XYratio;
-                }
-                if (Keyboard.IsKeyDown(Key.S))
-                {
-                    fXModifier -= fIncrements * XYratio;
-                    fYModifier -= fIncrements / XYratio;
+                    fAimAngle = Math.Atan((fModLineY) / (fModLineX));
+                    fAimAngle = (fAimAngle / 3.1415926f) * 180;
+                    fAimAngle += 1 + fIncrements;
+                    fAimAngle = (fAimAngle * 3.1415926f) / 180;
+                    fModLineX = fLineLength * (float)Math.Cos(fAimAngle);
+                    fModLineY = fLineLength * (float)Math.Sin(fAimAngle);
                 }
             }
-                //Play Ball
-                if (Keyboard.IsKeyDown(Key.Space))
+
+            //Play Ball
+            if (Keyboard.IsKeyDown(Key.Space))
             {
                 if (bSpaceHeld == false)
                 bBallThrown = true;
@@ -381,10 +401,22 @@ namespace aplimat_final_exam
             }
 
             //Line Visibility
-            if (Keyboard.IsKeyDown(Key.F))
+            if (Keyboard.IsKeyDown(Key.F) && !(bLineButtonPressed))
             {
                 if (bShowLine == true)
-                {bShowLine = false;} else { bShowLine = true;}
+                {
+                    bShowLine = false;
+                    bLineButtonPressed = true;
+                }
+                else
+                {
+                    bShowLine = true;
+                    bLineButtonPressed = true;
+                }    
+            }
+            if (Keyboard.IsKeyUp(Key.F))
+            {
+                bLineButtonPressed = false;
             }
 
             //Force Random
@@ -419,10 +451,11 @@ namespace aplimat_final_exam
             //Above
             gl.DrawText(5, 600, 1, 0, 0, "Arial", 30, "Score: " + score);
             gl.DrawText(5, 630, 1, 0, 0, "Arial", 15, "Round: " + round);
-            gl.DrawText(5, 660, 1, 0, 0, "Arial", 15, "XY RATIO: " + XYratio);
+            gl.DrawText(5, 660, 1, 0, 0, "Arial", 15, "Ball Position " + Ball.Position);
+            gl.DrawText(5, 690, 1, 0, 0, "Arial", 15, "fAimAngle : " + (fAimAngle / 3.1415926f) * 180 );
 
             //LENGTH OF LINE
-            gl.DrawText(5, 690, 1, 0, 0, "Arial", 15, "LENGTH OF LINE: " + Math.Sqrt( (Math.Pow(fXModifier,2)) + (Math.Pow(fYModifier, 2)) ) ); 
+            //gl.DrawText(5, 690, 1, 0, 0, "Arial", 15, "LENGTH OF LINE: " + Math.Sqrt( (Math.Pow(fXModifier,2)) + (Math.Pow(fYModifier, 2)) ) ); 
 
             if (bWindy == true)
             {
