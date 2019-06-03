@@ -57,7 +57,7 @@ namespace aplimat_final_exam.Models
         public float GetLength()
         {
             return (float)Math.Sqrt((x * x) + (y * y) + (z * z));
-        }
+        }           
 
         public Vector3 Normalize()
         {

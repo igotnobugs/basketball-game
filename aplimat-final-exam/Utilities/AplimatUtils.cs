@@ -16,5 +16,22 @@ namespace aplimat_final_exam.Utilities
             else if (val >= max) return max;
             else return val;
         }
+        public static float GetDistanceBetween(CubeMesh firstObject, CubeMesh secondObject)
+        {
+            var x = secondObject.Position.x - firstObject.Position.x;
+            var y = secondObject.Position.y - firstObject.Position.y;
+            var distance = (float)Math.Sqrt((x * x) + (y * y));
+            return distance;
+        }
+
+        public static double GetAngleBetween(CubeMesh firstObject, CubeMesh secondObject)
+        {
+            var x = secondObject.Position.x - firstObject.Position.x;
+            var y = secondObject.Position.y - firstObject.Position.y;
+            var angle = Math.Tan(y / x);
+            return angle;
+        }
+
     }
+
 }

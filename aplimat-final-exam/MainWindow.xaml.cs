@@ -129,6 +129,7 @@ namespace aplimat_final_exam
         private bool bShowLine = true;
         private bool bWindy = false;
         private bool bMeteorFell = false;
+        private bool bScored = false;
         private int counter = 360; //Gets reduced
         private int maxCounter = 360; // Used for checking
         private int lastround = 0;
@@ -150,7 +151,7 @@ namespace aplimat_final_exam
         private float fLineLength;
         private float fModLineX = 3;
         private float fModLineY = 3;
-        private float fIncrements = 0.1f;
+        private float fIncrements = 0.3f;
         private float fXModifier = 1.0f;
         private float fYModifier = 1.0f;
         private double fAimAngle;
@@ -263,10 +264,10 @@ namespace aplimat_final_exam
 
                 counter--;
                 if (counter > maxCounter - 2) {
-                    Ball.Velocity.x = fModLineX / 2;
-                    Ball.Velocity.y = fModLineY / 2;
+                    Ball.Velocity.x = fModLineX / 1.5f;
+                    Ball.Velocity.y = fModLineY / 1.5f;
                 }
-
+                 
                 //Ball.Velocity.x = (float)(Math.Truncate((double)Ball.Velocity.x * 100.0) / 100.0);
                 //Ball.Velocity.y = (float)(Math.Truncate((double)Ball.Velocity.y * 100.0) / 100.0);
             }
@@ -275,11 +276,12 @@ namespace aplimat_final_exam
             #region Scoring
             if (Net.Contains(Ball))
             {
-                if (lastround < round)
+                if ((lastround < round) && !(bScored))
                 {
                     score++;
                     fRandom = (float)Randomizer.Generate(-10, 10);
                     fGaussian = (float)Randomizer.Gaussian(1, 2);
+                    bScored = true;
                 }
                 Ball.ApplyForce(Net.CalculateDragForce(Ball) * 0.01f);            
             }
@@ -311,6 +313,7 @@ namespace aplimat_final_exam
                 }
                 counter = maxCounter;
                 lastround = round;
+                bScored = false;
                 round++;
             }
 
@@ -452,7 +455,9 @@ namespace aplimat_final_exam
             gl.DrawText(5, 600, 1, 0, 0, "Arial", 30, "Score: " + score);
             gl.DrawText(5, 630, 1, 0, 0, "Arial", 15, "Round: " + round);
             gl.DrawText(5, 660, 1, 0, 0, "Arial", 15, "Ball Position " + Ball.Position);
-            gl.DrawText(5, 690, 1, 0, 0, "Arial", 15, "fAimAngle : " + (fAimAngle / 3.1415926f) * 180 );
+            gl.DrawText(5, 690, 1, 0, 0, "Arial", 15, "Distance : " + AplimatUtils.GetDistanceBetween(Meteor, Ball));
+            gl.DrawText(5, 720, 1, 0, 0, "Arial", 15, "Distance : " + AplimatUtils.GetAngleBetween(Meteor, Ball));
+
 
             //LENGTH OF LINE
             //gl.DrawText(5, 690, 1, 0, 0, "Arial", 15, "LENGTH OF LINE: " + Math.Sqrt( (Math.Pow(fXModifier,2)) + (Math.Pow(fYModifier, 2)) ) ); 
@@ -490,7 +495,7 @@ namespace aplimat_final_exam
             }
             else
             {
-                Ball.ApplyGravity();
+                Ball.ApplyGravity(0.2f);
                 Ball.ApplyFriction();
                 if (bWindy == true)
                 {
@@ -511,13 +516,12 @@ namespace aplimat_final_exam
                 Ball.Velocity.x = (-(Ball.Velocity.x) / 1.5f);
             }
 
-            if (Ball.HasCollidedWith(Meteor))
+            //Ball Collided with Meteor
+            //Get distance between Ball and Metoer then check against its scale
+            if (AplimatUtils.GetDistanceBetween(Meteor, Ball) < (Ball.Scale.x + Meteor.Scale.x) + 2.0f)
             {
-                if (Ball.Position.y > Meteor.Position.y + Meteor.Scale.y)
-                {
-                    Ball.Velocity.y = (-(Ball.Velocity.y) / 2);
-                }
                 Ball.Velocity.x = (-(Ball.Velocity.x) / 1.5f);
+                Ball.Velocity.y = (-(Ball.Velocity.y) / 1.5f);
             }
 
             if (Ball.HasCollidedWith(RingEdge))
