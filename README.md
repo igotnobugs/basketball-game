@@ -8,5 +8,5 @@ A type of basketball game.
 - SharpGL 2.4.0
 - SharpGL.WPF 2.4.0
 
-### Credits to
+### Credits
 - My Aplimat Professor
