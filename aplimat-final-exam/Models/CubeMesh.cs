@@ -16,16 +16,19 @@ namespace aplimat_final_exam.Models
             this.Position = new Vector3();
             this.Velocity = new Vector3();
             this.Acceleration = new Vector3();
+            this.Rotation = 0;
         }
+
         public CubeMesh(Vector3 initPos)
         {
             this.Position = initPos;
             this.Velocity = new Vector3();
             this.Acceleration = new Vector3();
+            this.Rotation = 0;
 
         }
 
-        public CubeMesh(float x, float y, float z)
+        public CubeMesh(float x, float y, float z, int r)
         {
             this.Position = new Vector3();
             this.Velocity = new Vector3();
@@ -33,6 +36,7 @@ namespace aplimat_final_exam.Models
             this.Position.x = x;
             this.Position.y = y;
             this.Position.z = z;
+            this.Rotation = r;
         }
 
         public void Draw(OpenGL gl)
@@ -98,9 +102,9 @@ namespace aplimat_final_exam.Models
             UpdateMotion();
         }
 
-        public void DrawBasketBall(OpenGL gl)
+        public void DrawBasketBall(OpenGL gl, int iRot = 0)
         {
-            //Draw Simple Circle
+            //Draw Simple Circle - No Rotation yet
             gl.Begin(OpenGL.GL_LINE_LOOP);
             for (int ii = 0; ii < 100; ii++)
             {
@@ -111,15 +115,27 @@ namespace aplimat_final_exam.Models
             }
             gl.End();
             //Draw Line from left tip of circle to right tip.
+            // iRot 360 = 0. Convert iRot to rads
+            float iRotRads = 2.0f * 3.1415926f * iRot / 360;
+            // Get new x , y with length this.Scale
+            double xx = this.Scale.x * Math.Cos(iRotRads);
+            double yy = this.Scale.x * Math.Sin(iRotRads);
             gl.Begin(OpenGL.GL_LINE_STRIP);
-            gl.Vertex(this.Position.x - this.Scale.x, this.Position.y, 0);
-            gl.Vertex(this.Position.x + this.Scale.x, this.Position.y, 0);
+            gl.Vertex(this.Position.x - xx, this.Position.y - yy, 0);
+            gl.Vertex(this.Position.x + xx, this.Position.y + yy, 0);
             gl.End();
             // Draw Line from top tip of cricle to bottom tip.
+            // Starting iRot is 90
+            /*
+            float iRotRads2 = 2.0f * 3.1415926f * (iRot + 90) / 360;
+            double xxx = this.Scale.x * Math.Cos(iRotRads2);
+            double yyy = this.Scale.x * Math.Sin(iRotRads2);
             gl.Begin(OpenGL.GL_LINE_STRIP);
-            gl.Vertex(this.Position.x, this.Position.y + this.Scale.x, 0);
-            gl.Vertex(this.Position.x, this.Position.y - this.Scale.x, 0);
+            gl.Vertex(this.Position.x + xxx, this.Position.y + yyy, 0);
+            gl.Vertex(this.Position.x - xxx, this.Position.y - yyy, 0);
             gl.End();
+            */
+
             //Draw left curve
             gl.Begin(OpenGL.GL_LINE_LOOP);            
             for (int ii = 0; ii < 50; ii++)

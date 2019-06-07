@@ -13,6 +13,7 @@ namespace aplimat_final_exam.Models
         public Vector3 Velocity;
         public Vector3 Acceleration;
         public Vector3 Friction;
+        public int Rotation;
 
         public float Mass = 1;
 
