@@ -106,8 +106,9 @@ namespace aplimat_final_exam
         private CubeMesh Ball = new CubeMesh()
         {
             Position = new Vector3(BallDefaultX, BallDefaultY, 0),
-            Scale = new Vector3(2, 2, 0),
-            Mass = 15
+            Scale = new Vector3(6, 6, 0),
+            Mass = 15,
+            Rotation = 60
         };
 
         private CubeMesh Line = new CubeMesh();
@@ -175,7 +176,7 @@ namespace aplimat_final_exam
 
             //Draw All Objects
             gl.Color(0.0, 0.0, 1.5);
-            Ball.DrawBasketBall(gl, 60);
+            Ball.DrawBasketBall(gl);
             gl.Color(0.0, 0.5, 0.0);
             Ground.Draw(gl);
             gl.Color(0.0, 0.5, 0.5);
@@ -266,8 +267,9 @@ namespace aplimat_final_exam
                 if (counter > maxCounter - 2) {
                     Ball.Velocity.x = fModLineX / 1.5f;
                     Ball.Velocity.y = fModLineY / 1.5f;
+                   
                 }
-                 
+                Ball.Rotation += 10;
                 //Ball.Velocity.x = (float)(Math.Truncate((double)Ball.Velocity.x * 100.0) / 100.0);
                 //Ball.Velocity.y = (float)(Math.Truncate((double)Ball.Velocity.y * 100.0) / 100.0);
             }
