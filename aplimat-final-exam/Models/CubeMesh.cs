@@ -86,6 +86,7 @@ namespace aplimat_final_exam.Models
 
             UpdateMotion();
         }
+
         public void DrawLine(OpenGL gl, CubeMesh origin, float fLinePointXMod, float fLinePointYMod, float LineScale = 0)
         {
             gl.Begin(OpenGL.GL_LINE_STRIP);
@@ -94,6 +95,60 @@ namespace aplimat_final_exam.Models
             var fLineEndPointY = origin.Position.y + LineScale;
             gl.Vertex(fLineEndPointX + fLinePointXMod, fLineEndPointY + fLinePointYMod, 0);
             gl.End();
+            UpdateMotion();
+        }
+
+        public void DrawBasketBall(OpenGL gl)
+        {
+            //Draw Simple Circle
+            gl.Begin(OpenGL.GL_LINE_LOOP);
+            for (int ii = 0; ii < 100; ii++)
+            {
+                float theta = 2.0f * 3.1415926f * ii / 100;
+                double x = this.Scale.x * Math.Cos(theta);
+                double y = this.Scale.x * Math.Sin(theta);
+                gl.Vertex(x + this.Position.x, y + this.Position.y);
+            }
+            gl.End();
+            //Draw Line from left tip of circle to right tip.
+            gl.Begin(OpenGL.GL_LINE_STRIP);
+            gl.Vertex(this.Position.x - this.Scale.x, this.Position.y, 0);
+            gl.Vertex(this.Position.x + this.Scale.x, this.Position.y, 0);
+            gl.End();
+            // Draw Line from top tip of cricle to bottom tip.
+            gl.Begin(OpenGL.GL_LINE_STRIP);
+            gl.Vertex(this.Position.x, this.Position.y + this.Scale.x, 0);
+            gl.Vertex(this.Position.x, this.Position.y - this.Scale.x, 0);
+            gl.End();
+            //Draw left curve
+            gl.Begin(OpenGL.GL_LINE_LOOP);            
+            for (int ii = 0; ii < 50; ii++)
+            {
+                float theta = 2.0f * 3.1415926f * ii / 50;
+                double x = (this.Scale.x / 1.5) * Math.Cos(theta);
+                double y = (this.Scale.x / 1.5) * Math.Sin(theta);
+                // INCOMPLETE
+                x = this.Position.x - this.Scale.x + x; // INCOMPLETE
+                y = this.Position.y + y;
+                var length = Math.Sqrt((x + this.Scale.x * x + this.Scale.x) + (y * y));
+                if (length < this.Scale.x)
+                {
+                    gl.Vertex(x, y);
+                }
+            }
+            gl.End();
+            //Draw right curve
+            gl.Begin(OpenGL.GL_LINE_LOOP);
+            for (int ii = 0; ii < 50; ii++)
+            {
+                float theta = 2.0f * 3.1415926f * ii / 50;
+                double x = (this.Scale.x / 1.5) * Math.Cos(theta);
+                double y = (this.Scale.x / 1.5) * Math.Sin(theta);
+                gl.Vertex(this.Position.x + this.Scale.x + x, this.Position.y + y);
+            }
+            gl.End();
+
+
             UpdateMotion();
         }
 

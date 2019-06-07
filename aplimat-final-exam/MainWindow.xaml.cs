@@ -175,7 +175,7 @@ namespace aplimat_final_exam
 
             //Draw All Objects
             gl.Color(0.0, 0.0, 1.5);
-            Ball.DrawCircle(gl);
+            Ball.DrawBasketBall(gl);
             gl.Color(0.0, 0.5, 0.0);
             Ground.Draw(gl);
             gl.Color(0.0, 0.5, 0.5);
