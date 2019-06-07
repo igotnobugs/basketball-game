@@ -1,12 +1,19 @@
 # basketball-game
 APLIMAT Final Project
 
-A final quiz/project for the class APLIMAT 2017 2nd term.
-A type of basketball game.
+A final quiz/project for the class APLIMAT 2017 2nd term.  
+Basketball game in OpenGL
 
-### NuGet Packages Needed (included)
-- SharpGL 2.4.0
-- SharpGL.WPF 2.4.0
+## Controls
+**Space** - Throw  
+**W** - Increase Power  
+**S** - Decrease Power  
+**A** - Increase Angle  
+**D** - Decrease Angle  
+**F** - Show Aiming Line  
+**R** - Reset Only  
+**X** - Randomize and Reset  
+**C** - Add Score  
 
 ### Credits
 - My Aplimat Professor
