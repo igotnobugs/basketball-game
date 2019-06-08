@@ -84,9 +84,9 @@ namespace basketball_game.Models
             gl.Begin(OpenGL.GL_LINE_LOOP);
             for (int ii = 0; ii < Resolution; ii++)
             {
-                double theta = 2.0f * Math.PI * ii / Resolution;
-                double x = Radius * Math.Cos(theta);
-                double y = Radius * Math.Sin(theta);
+                double angle = 2.0f * Math.PI * ii / Resolution;
+                double x = Radius * Math.Cos(angle);
+                double y = Radius * Math.Sin(angle);
                 gl.Vertex(x + this.Position.x, y + this.Position.y);
             }
             gl.End();
@@ -100,6 +100,7 @@ namespace basketball_game.Models
             gl.Vertex(origin.Position.x, origin.Position.y, 0);
             gl.Vertex((origin.Position.x + target.x) * MultScale, (origin.Position.y + target.y) * MultScale, 0);
             gl.End();
+
             UpdateMotion();
         }
 
@@ -112,9 +113,9 @@ namespace basketball_game.Models
             gl.Begin(OpenGL.GL_LINE_LOOP);
             for (int ii = 0; ii < Resolution; ii++)
             {             
-                double theta = 2.0f * Math.PI * ii / Resolution;
-                double x = Radius * Math.Cos(theta);
-                double y = Radius * Math.Sin(theta);
+                double angle = 2.0f * Math.PI * ii / Resolution;
+                double x = Radius * Math.Cos(angle);
+                double y = Radius * Math.Sin(angle);
                 gl.Vertex(x + this.Position.x, y + this.Position.y);
             }
             gl.End();
@@ -174,20 +175,32 @@ namespace basketball_game.Models
             this.Acceleration *= 0;
         }
 
-
         public bool HasCollidedWith(ObjectMesh target)
-        {
-            if (this.Type == "Circle")
+        {    
+            if ((this.Type == "Circle") && (target.Type == "Circle"))
+            {
+                bool xHasNotCollided =
+                    this.Position.x - this.Radius - (this.Velocity.x / 2) > target.Position.x + target.Radius ||
+                    this.Position.x + this.Radius + (this.Velocity.x / 2) < target.Position.x - target.Radius;
+
+                bool yHasNotCollided =
+                    this.Position.y - this.Radius + (this.Velocity.y / 2) > target.Position.y + target.Radius ||
+                    this.Position.y + this.Radius - (this.Velocity.y / 2) < target.Position.y - target.Radius;
+
+                bool zHasNotCollided =
+                    this.Position.z - this.Radius > target.Position.z + target.Scale.z ||
+                    this.Position.z + this.Radius < target.Position.z - target.Scale.z;
+
+                return !(xHasNotCollided || yHasNotCollided || zHasNotCollided);
+            } else if ((this.Type == "Circle"))
             {
                 bool xHasNotCollided =
                     this.Position.x - this.Radius - (this.Velocity.x / 2) > target.Position.x + target.Scale.x ||
                     this.Position.x + this.Radius + (this.Velocity.x / 2) < target.Position.x - target.Scale.x;
-                //this.Position.x - this.Scale.x > target.Position.x + target.Scale.x ||
-                //this.Position.x + this.Scale.x < target.Position.x - target.Scale.x;
 
                 bool yHasNotCollided =
-                    this.Position.y - this.Radius > target.Position.y + target.Scale.y ||
-                    this.Position.y + this.Radius < target.Position.y - target.Scale.y;
+                    this.Position.y - this.Radius + (this.Velocity.y / 2) > target.Position.y + target.Scale.y ||
+                    this.Position.y + this.Radius - (this.Velocity.y / 2) < target.Position.y - target.Scale.y;
 
                 bool zHasNotCollided =
                     this.Position.z - this.Radius > target.Position.z + target.Scale.z ||
@@ -199,12 +212,10 @@ namespace basketball_game.Models
                 bool xHasNotCollided =
                     this.Position.x - this.Scale.x - (this.Velocity.x / 2) > target.Position.x + target.Scale.x ||
                     this.Position.x + this.Scale.x + (this.Velocity.x / 2) < target.Position.x - target.Scale.x;
-                //this.Position.x - this.Scale.x > target.Position.x + target.Scale.x ||
-                //this.Position.x + this.Scale.x < target.Position.x - target.Scale.x;
 
                 bool yHasNotCollided =
-                    this.Position.y - this.Scale.y > target.Position.y + target.Scale.y ||
-                    this.Position.y + this.Scale.y < target.Position.y - target.Scale.y;
+                    this.Position.y - this.Scale.y + (this.Velocity.y / 2) > target.Position.y + target.Scale.y ||
+                    this.Position.y + this.Scale.y - (this.Velocity.y / 2) < target.Position.y - target.Scale.y;
 
                 bool zHasNotCollided =
                     this.Position.z - this.Scale.z > target.Position.z + target.Scale.z ||
@@ -212,27 +223,6 @@ namespace basketball_game.Models
 
                 return !(xHasNotCollided || yHasNotCollided || zHasNotCollided);
             }
-
-        }
-
-        //Collision for Small Leaves
-        public bool HasDelicateCollidedWith(ObjectMesh target)
-        {
-            bool xHasNotCollided =
-                this.Position.x - this.Scale.x - (this.Velocity.x / 2) > target.Position.x + target.Scale.x ||
-                this.Position.x + this.Scale.x + (this.Velocity.x / 2) < target.Position.x - target.Scale.x;
-            //this.Position.x - this.Scale.x > target.Position.x + target.Scale.x ||
-            //this.Position.x + this.Scale.x < target.Position.x - target.Scale.x;
-
-            bool yHasNotCollided =
-                this.Position.y - this.Scale.y + (this.Velocity.y / 2) > target.Position.y + target.Scale.y ||
-                this.Position.y + this.Scale.y - (this.Velocity.y / 2) < target.Position.y - target.Scale.y;
-
-            bool zHasNotCollided =
-                this.Position.z - this.Scale.z > target.Position.z + target.Scale.z ||
-                this.Position.z + this.Scale.z < target.Position.z - target.Scale.z;
-
-            return !(xHasNotCollided || yHasNotCollided || zHasNotCollided);
         }
     }
 }
