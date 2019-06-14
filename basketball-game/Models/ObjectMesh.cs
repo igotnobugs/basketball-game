@@ -126,6 +126,8 @@ namespace basketball_game.Models
             gl.Begin(OpenGL.GL_LINE_STRIP);
             gl.Vertex(this.Position.x - xx, this.Position.y - yy, 0);
             gl.Vertex(this.Position.x + xx, this.Position.y + yy, 0);
+
+          
             gl.End();
 
             // Draw Line from top tip of cricle to bottom tip. Starting iRot is 90
@@ -141,26 +143,50 @@ namespace basketball_game.Models
             gl.Begin(OpenGL.GL_LINE_LOOP);
             for (int ii = 0; ii < Resolution; ii++)
             {
-                double angle = 1.0f * Math.PI * ii / Resolution;
-                double x = Radius/2 * Math.Cos(angle - (Math.PI/2));
-                double y = Radius/2 * Math.Sin(angle - (Math.PI/2));
-                gl.Vertex(x + this.Position.x + xxx, y + this.Position.y + yyy);
+                double angle = 2.0f * Math.PI * ii / (Resolution / 2);
+                double x = Radius/1.5 * Math.Cos(angle);
+                double y = Radius/1.5 * Math.Sin(angle);
+                
+                var xxxx = xx - x;
+                var yyyy = yy - y;
+
+                var distance = (float)Math.Sqrt((xxxx * xxxx) + (yyyy * yyyy));
+
+                //Console.WriteLine(distance + " " + Radius);
+                if (distance < Radius)
+                {
+                    gl.Vertex(x + this.Position.x - xx, y + this.Position.y - yy);
+                }
+                
+                //gl.Vertex(x + this.Position.x - xx, y + this.Position.y - yy);
+                //Console.WriteLine(x);
             }
             gl.End();
 
-            /*
-            gl.End();
-            //Draw right curve
-            gl.Begin(OpenGL.GL_LINE_LOOP);
-            for (int ii = 0; ii < 50; ii++)
+            //Draw Right Curve
+            //gl.Begin(OpenGL.GL_LINE_LOOP);
+            gl.Begin(OpenGL.GL_LINE_STRIP);
+            for (int ii = 0; ii < Resolution; ii++)
             {
-                float theta = 2.0f * 3.1415926f * ii / 50;
-                double x = (this.Scale.x / 1.5) * Math.Cos(theta);
-                double y = (this.Scale.x / 1.5) * Math.Sin(theta);
-                gl.Vertex(this.Position.x + this.Scale.x + x, this.Position.y + y);
+                double angle = 2.0f * Math.PI * ii / (Resolution / 2);
+                double x = Radius / 1.5 * Math.Cos(angle);
+                double y = Radius / 1.5 * Math.Sin(angle);
+
+                var xxxx = xx + x;
+                var yyyy = yy + y;
+
+                var distance = (float)Math.Sqrt((xxxx * xxxx) + (yyyy * yyyy));
+
+                //Console.WriteLine(distance + " " + Radius);
+                if (distance < Radius)
+                {
+                    gl.Vertex(x + this.Position.x + xx, y + this.Position.y + yy);
+                }
+
+                //gl.Vertex(x + this.Position.x - xx, y + this.Position.y - yy);
+                //Console.WriteLine(x);
             }
             gl.End();
-            */
 
             UpdateMotion();
         }

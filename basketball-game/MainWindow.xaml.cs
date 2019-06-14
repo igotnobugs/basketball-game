@@ -111,7 +111,7 @@ namespace basketball_game
             Position = BallDefaultPos,
             Radius = 6.0f,
             Mass = 15,
-            Rotation = 60
+            Rotation = 0
         };
 
 
