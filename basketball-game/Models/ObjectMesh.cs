@@ -127,6 +127,7 @@ namespace basketball_game.Models
             gl.Vertex(this.Position.x - xx, this.Position.y - yy, 0);
             gl.Vertex(this.Position.x + xx, this.Position.y + yy, 0);
             gl.End();
+
             // Draw Line from top tip of cricle to bottom tip. Starting iRot is 90
             double iRotRads2 = 2.0f * Math.PI * (iRot + 90) / 360;
             double xxx = Radius * Math.Cos(iRotRads2);
@@ -136,22 +137,18 @@ namespace basketball_game.Models
             gl.Vertex(this.Position.x - xxx, this.Position.y - yyy, 0);
             gl.End();
 
-            /*Draw left curve
+            //Draw left curve
             gl.Begin(OpenGL.GL_LINE_LOOP);
-            for (int ii = 0; ii < 50; ii++)
+            for (int ii = 0; ii < Resolution; ii++)
             {
-                float theta = 2.0f * 3.1415926f * ii / 50;
-                double x = (this.Scale.x / 1.5) * Math.Cos(theta);
-                double y = (this.Scale.x / 1.5) * Math.Sin(theta);
-                // INCOMPLETE
-                x = this.Position.x - this.Scale.x + x; // INCOMPLETE
-                y = this.Position.y + y;
-                var length = Math.Sqrt((x + this.Scale.x * x + this.Scale.x) + (y * y));
-                if (length < this.Scale.x)
-                {
-                    gl.Vertex(x, y);
-                }
+                double angle = 1.0f * Math.PI * ii / Resolution;
+                double x = Radius/2 * Math.Cos(angle - (Math.PI/2));
+                double y = Radius/2 * Math.Sin(angle - (Math.PI/2));
+                gl.Vertex(x + this.Position.x + xxx, y + this.Position.y + yyy);
             }
+            gl.End();
+
+            /*
             gl.End();
             //Draw right curve
             gl.Begin(OpenGL.GL_LINE_LOOP);

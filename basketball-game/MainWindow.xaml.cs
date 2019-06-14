@@ -109,7 +109,7 @@ namespace basketball_game
         private ObjectMesh Ball = new ObjectMesh()
         {
             Position = BallDefaultPos,
-            Radius = 2.0f,
+            Radius = 6.0f,
             Mass = 15,
             Rotation = 60
         };
