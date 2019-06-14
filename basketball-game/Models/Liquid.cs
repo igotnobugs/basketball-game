@@ -9,14 +9,15 @@ namespace basketball_game.Models
 {
     public class Liquid
     {
-        public float x, y;
+        public float x, y, z;
         public float width, depth;
         public float drag;
 
-        public Liquid(float x, float y, float width, float height, float drag)
+        public Liquid(float x, float y, float z, float width, float height, float drag)
         {
             this.x = x;
             this.y = y;
+            this.z = z;
             this.width = width;
             this.depth = height;
             this.drag = drag;
@@ -26,10 +27,10 @@ namespace basketball_game.Models
         {
             gl.Color(r, g, b);
             gl.Begin(OpenGL.GL_POLYGON);
-            gl.Vertex(x - width, y, 0);
-            gl.Vertex(x + width, y, 0);
-            gl.Vertex(x + width, y - depth, 0);
-            gl.Vertex(x - width, y - depth, 0);
+            gl.Vertex(x - width, y, z);
+            gl.Vertex(x + width, y, z);
+            gl.Vertex(x + width, y - depth, z);
+            gl.Vertex(x - width, y - depth, z);
             gl.End();
         }
 

@@ -24,9 +24,7 @@ namespace basketball_game
     /// </summary>
     public partial class MainWindow : Window
     {        
-        private Vector3 mousePos = new Vector3();
-
-        #region Initialization
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -37,11 +35,11 @@ namespace basketball_game
             OpenGL gl = args.OpenGL;
 
             gl.Enable(OpenGL.GL_DEPTH_TEST);
-
+           
             float[] global_ambient = new float[] { 0.5f, 0.5f, 0.5f, 1.0f };
-            float[] light0pos = new float[] { 0.0f, 5.0f, 10.0f, 1.0f };
+            float[] light0pos = new float[] { 0.0f, 0.0f, 10.0f, 0.0f };
             float[] light0ambient = new float[] { 0.2f, 0.2f, 0.2f, 1.0f };
-            float[] light0diffuse = new float[] { 0.3f, 0.3f, 0.3f, 1.0f };
+            float[] light0diffuse = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
             float[] light0specular = new float[] { 0.8f, 0.8f, 0.8f, 1.0f };
 
             float[] lmodel_ambient = new float[] { 0.2f, 0.2f, 0.2f, 1.0f };
@@ -51,56 +49,70 @@ namespace basketball_game
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_POSITION, light0pos);
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_AMBIENT, light0ambient);
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_DIFFUSE, light0diffuse);
-            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPECULAR, light0specular);
-            //gl.Disable(OpenGL.GL_LIGHTING);
-            //gl.Enable(OpenGL.GL_LIGHT0);
+            //gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPECULAR, light0specular);
+            //gl.Enable(OpenGL.GL_LIGHTING);        
+            gl.Enable(OpenGL.GL_LIGHT0);
             gl.Enable(OpenGL.GL_LINE_SMOOTH);
 
             gl.ShadeModel(OpenGL.GL_SMOOTH);
         }
-        #endregion
-        
-        
-        private void OnMouseMove(object sender, MouseEventArgs e)
-        {
-            var position = e.GetPosition(this);
-            mousePos.x = (float)position.X - (float)Width / 2.0f;
-            mousePos.y = -((float)position.Y - (float)Height / 2.0f);
-            //Console.WriteLine(mousePos.x + " " + mousePos.y);
-        }
-        
 
-        private void ManageKeyPress()
+        private void OpenGLControl_Resized(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
         {
+            //  Get the OpenGL object.
+            OpenGL gl = args.OpenGL;
 
+            //  Set the projection matrix.
+            gl.MatrixMode(OpenGL.GL_PROJECTION);
+
+            //  Load the identity.
+            gl.LoadIdentity();
+
+            //  Create a perspective transformation.
+            gl.Perspective(40.0f, (double)Width / (double)Height, 0.01, 350.0);
+
+            //  Use the 'look at' helper function to position and aim the camera.
+            //gl.LookAt(0, 0, 20.0f, 0, 0, 0, 0, 1, 0);
+
+            //  Set the modelview matrix.
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
         }
-        
-        
+
+        private Vector3 mouseVector = new Vector3(0,0,0);
+
+
+                
         #region Static Objects
         private  ObjectMesh Ground = new ObjectMesh()
         {
-            Position = new Vector3(0, -35, 0),
-            Scale = new Vector3(500, 0.5f, 0)
+            Position = new Vector3(0, -35, 50),
+            Scale = new Vector3(90, 1.5f, 50)
+        };
+
+        private ObjectMesh Box = new ObjectMesh()
+        {
+            Position = new Vector3(0, 0, 50),
+            Scale = new Vector3(5, 5, 1)
         };
 
         private ObjectMesh Pole = new ObjectMesh()
         {
-            Position = new Vector3(50, -15, 0),
-            Scale = new Vector3(0.5f, 20, 0)
+            Position = new Vector3(50, -15, 50),
+            Scale = new Vector3(0.5f, 20, 1)
         };
 
         private static ObjectMesh Board= new ObjectMesh()
         {
-            Position = new Vector3(48.5f, 3.0f, 0),
-            Scale = new Vector3(0.5f, 4.5f, 0)
+            Position = new Vector3(48.5f, 3.0f, 50),
+            Scale = new Vector3(0.5f, 4.5f, 1)
         };
 
-        private Liquid RimNet = new Liquid(Board.Position.x - 3, 1.5f, 2.5f, 1.0f, 1);
-        private Liquid CenNet = new Liquid(Board.Position.x - 3, 0.5f, 2.5f, 2.0f, 1);
+        private Liquid RimNet = new Liquid(Board.Position.x - 3, 1.5f, 50, 2.5f, 1.0f, 1);
+        private Liquid CenNet = new Liquid(Board.Position.x - 3, 0.5f, 50, 2.5f, 2.0f, 1);
 
         private ObjectMesh RingEdge = new ObjectMesh()
         {
-            Position = new Vector3(Board.Position.x - 6, 1.0f, 0),
+            Position = new Vector3(Board.Position.x - 6, 1.0f, 50),
             Scale = new Vector3(0.5f, 0.5f, 0)
         };
         #endregion
@@ -109,12 +121,10 @@ namespace basketball_game
         private ObjectMesh Ball = new ObjectMesh()
         {
             Position = BallDefaultPos,
-            Radius = 6.0f,
+            Radius = 2.0f,
             Mass = 15,
             Rotation = 0
         };
-
-
 
         private ObjectMesh Line = new ObjectMesh();
 
@@ -122,7 +132,7 @@ namespace basketball_game
 
         private Attractor Meteor = new Attractor()
         {
-            Position = new Vector3(30, 500, 0),
+            Position = new Vector3(30, 500, 50),
             Radius = 20.0f,
             Mass = 50
         };
@@ -130,25 +140,25 @@ namespace basketball_game
 
         #region Variables
         //Game
-        private bool bBallThrown = false;
-        private bool bSpaceHeld = false;
-        private bool bWindy = false;
-        private bool bMeteorFell = false;
-        private bool bScored = false;
-        private int iCounter = 60; //Gets reduced
-        private int iMaxCounter = 60; // Used for checking
-        private int iRound = 1;
-        private int iScore = 0;
-        private float fRandom = 0;
-        private float fGaussian = 0;
-        private float fLeaveGaussian = 0;
-        private float fLeaveRandom = 0;
-        private double dPower = 0;
-        private Vector3 vRightWind = new Vector3(-0.2f, 0, 0);
-        private Vector3 vMeteorFalling = new Vector3(0, -10.0f, 0);
+        private bool isBallThrown = false;
+        private bool isSpaceHeld = false;
+        private bool isWindy = false;
+        private bool isMeteorFall = false;
+        private bool isScored = false;
+        private int curCounter = 60; //Gets reduced
+        private int maxCounter = 60; // Used for checking
+        private int curRound = 1;
+        private int curScore = 0;
+        private float randNorm = 0;
+        private float randGaussian = 0;
+        private float leaveRandNorm = 0;
+        private float leaveRandGaussian = 0;
+        private double power = 0;
+        private Vector3 rightWindVector = new Vector3(-0.2f, 0, 0);
+        private Vector3 meteorFallingVector = new Vector3(0, -10.0f, 0);
 
         //Ball Position
-        private static Vector3 BallDefaultPos = new Vector3(-40.0f, -25.0f, 0);
+        private static Vector3 BallDefaultPos = new Vector3(-40.0f, -25.0f, 50);
 
         //Line and Aiming Variables 
         private bool bShowLine = true;
@@ -160,44 +170,63 @@ namespace basketball_game
         private float fIncrements = 0.7f;
         private float fMinIncrements = 0.3f;
         private float fMaxIncrements = 1.5f;
-        private double fAimAngle;
+        private double aimAngle;
 
-
+        //Camera, View variables
+        private Vector3 lookAtVector = new Vector3();
+        private Vector3 mousePos = new Vector3();
+        private Vector3 movementVector = new Vector3();
+        private int zoom;
 
         #endregion
 
+        private void OnMouseMove(object sender, MouseEventArgs e)
+        {
+            var position = e.GetPosition(this);
+            mousePos.x = (float)position.X - (float)Width / 2.0f;
+            mousePos.y = -((float)position.Y - (float)Height / 2.0f);
+            mouseVector = new Vector3(mousePos.x / 100, mousePos.y / 100, 0);
+            //Console.WriteLine((mousePos.x)+ " " + (mousePos.y));
+        }
+
         private void OpenGLControl_OpenGLDraw(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
         {
-            this.Title = "APLIMAT Final Exam | Basketball Game";
+            
+            Title = "basketball-game";
+
             #region OpenGL Draw 
             OpenGL gl = args.OpenGL;
 
             // Clear The Screen And The Depth Buffer
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
-
             // Move screen back
             gl.LoadIdentity();
-            gl.Translate(0.0f, 0.0f, -100.0f);
+            gl.LookAt(0 - mouseVector.x - movementVector.x, 0 - mouseVector.y, 20.0f + zoom, 0 - movementVector.x, 0 + mouseVector.y, zoom, 0, 1, 0);
+            gl.Translate(0.0f , 0.0f, -150.0f);
 
             //Draw All Objects
             gl.Color(0.0, 0.0, 1.5);
             Ball.DrawBasketBall(gl, 60);
-            gl.Color(0.0, 0.5, 0.0);
-            Ground.DrawCube(gl);
-            gl.Color(0.0, 0.5, 0.5);
+            //gl.Color(0.0, 0.5, 0.0);          
+            Ground.DrawCube(gl, 0, 120, 0);
+            gl.Color(0.3, 0.3, 0.3);          
             Pole.DrawCube(gl);
             gl.Color(0.0, 0.5, 0.5);
             Board.DrawCube(gl);
             gl.Color(0.0, 0.5, 0.5);
             RingEdge.DrawCube(gl);
+
             RimNet.Draw(gl, 50, 50, 50);
             CenNet.Draw(gl, 40, 40, 40);
-            
+
+            //Box.DrawCube(gl);
+
+           
             //Aiming Line Draw
             if (bShowLine == true)
             {
                 gl.Color(1.0, 0.6, 0.6);
-                if (bBallThrown == true)
+                if (isBallThrown == true)
                 {
                     Line.DrawLine(gl, Ball, Ball.Velocity, 1);
                 }
@@ -206,31 +235,29 @@ namespace basketball_game
                     Line.DrawLine(gl, Ball, vModLine, 1);
                 }
             }
-
-            //
             #endregion
 
             #region WINDY Score when > 10
             //WINDY!!!!!!!!!!!!!! --- SCORE > 10
-            if (iScore >= 10)
+            if (curScore >= 10)
             {
-                bWindy = true;
+                isWindy = true;
                 ObjectMesh Leave = new ObjectMesh()
                 {
                     Scale = new Vector3(0.5f, 0.5f, 0),
                     Mass = 0.3f
                 };
-                fLeaveGaussian = (float)Randomizer.Gaussian(-0, 10);
-                fLeaveRandom = (float)Randomizer.Generate(0.1f, 0.5f);
-                Leave.Position = new Vector3(fLeaveGaussian + 200, fLeaveGaussian, 0);
-                Leave.Mass = fLeaveRandom;
+                leaveRandGaussian = (float)Randomizer.Gaussian(-0, 10);
+                leaveRandNorm = (float)Randomizer.Generate(0.1f, 0.5f);
+                Leave.Position = new Vector3(leaveRandGaussian + 200, leaveRandGaussian, 0);
+                Leave.Mass = leaveRandNorm;
                 Leaves.Add(Leave);
                 foreach (var leaf in Leaves)
                 {
                     gl.Color(0.5, 0.7, 0.0);
                     leaf.DrawCube(gl);
                     leaf.ApplyGravity();
-                    leaf.ApplyForce(vRightWind);
+                    leaf.ApplyForce(rightWindVector);
                     leaf.Velocity.Clamp(-0.2f, -0.2f, 0);
                     if (leaf.HasCollidedWith(Ground))
                     {
@@ -250,27 +277,29 @@ namespace basketball_game
             #endregion
 
             #region Meteor Fell Score When > 20
-            if (iScore >= 20)
+            if (curScore >= 20)
             {
                 Meteor.DrawCircle(gl);
-                Meteor.ApplyForce(vMeteorFalling);
+                Meteor.ApplyForce(meteorFallingVector);
                 if (Meteor.Position.y <= -30)
                 {
                     Meteor.Velocity.y *= 0;
                     Meteor.Position.y = -30;
-                    bMeteorFell = true;
+                    isMeteorFall = true;
                 }
             }
             #endregion        
 
             #region Ball Thrown Code
             //You pressed Space
-            if (bBallThrown == true) {
-                iCounter--;
-                if (iCounter > iMaxCounter - 2) {
-                    Ball.Velocity = vModLine / 1.5f;              
+            if (isBallThrown == true) {
+                curCounter--;
+                if (curCounter > maxCounter - 2) {
+                    Ball.Velocity.x = vModLine.x / 1.5f;
+                    Ball.Velocity.y = vModLine.y / 1.5f;
                 }
                 Ball.Rotation += 10;
+                lookAtVector = Ball.Position;
             }
             #endregion
 
@@ -278,13 +307,13 @@ namespace basketball_game
             if (CenNet.Contains(Ball)) 
             {
                 Console.WriteLine("Ball is in CenNet...");
-                if (!bScored)
+                if (!isScored)
                 {
-                    iScore++;
-                    fRandom = (float)Randomizer.Generate(-10, 10);
-                    fGaussian = (float)Randomizer.Gaussian(1, 2);
+                    curScore++;
+                    randNorm = (float)Randomizer.Generate(-10, 10);
+                    randGaussian = (float)Randomizer.Gaussian(1, 2);
                     Console.WriteLine("Player Scores!");
-                    bScored = true;
+                    isScored = true;
                 }
                 Ball.ApplyForce(RimNet.CalculateDragForce(Ball) * 1);
                 Ball.ApplyForce(CenNet.CalculateDragForce(Ball) * 2);          
@@ -292,20 +321,20 @@ namespace basketball_game
             #endregion
 
             #region Reset Code
-            if (iCounter < 0)
+            if (curCounter < 0)
             {
-                Pole.Position.x += fRandom;
-                Board.Position.x += fRandom; 
-                RingEdge.Position.x += fRandom;
-                RimNet.x += fRandom;
-                CenNet.x += fRandom;
+                Pole.Position.x += randNorm;
+                Board.Position.x += randNorm; 
+                RingEdge.Position.x += randNorm;
+                RimNet.x += randNorm;
+                CenNet.x += randNorm;
 
-                if ((fRandom < 1) && (fRandom > -1))
+                if ((randNorm < 1) && (randNorm > -1))
                 {
-                    Board.Position.y += fGaussian;
-                    RimNet.y += fGaussian;
-                    CenNet.y += fGaussian;
-                    RingEdge.Position.y += fGaussian;       
+                    Board.Position.y += randGaussian;
+                    RimNet.y += randGaussian;
+                    CenNet.y += randGaussian;
+                    RingEdge.Position.y += randGaussian;       
                 }
 
                 if ((Pole.Position.x > 70) || (Pole.Position.x < 30))
@@ -316,79 +345,81 @@ namespace basketball_game
                     RimNet.x = 45.5f;
                     CenNet.x = 45.5f;
                 }
-                iCounter = iMaxCounter;
-                bScored = false;
-                iRound++;
+                curCounter = maxCounter;
+                isScored = false;
+                curRound++;
             }
 
-            if (iCounter == iMaxCounter)
+            if (curCounter == maxCounter)
             {
-                bSpaceHeld = false;
-                bBallThrown = false;
+                isSpaceHeld = false;
+                isBallThrown = false;
                 Ball.Velocity.x *= 0.0f;
                 Ball.Velocity.y *= 0.0f;
                 Ball.Position = BallDefaultPos;
-                fRandom *= 0;
-                fGaussian *= 0;
+                randNorm *= 0;
+                randGaussian *= 0;
             }
             #endregion
 
             #region Controls
             // These controls only available when Ball is not yet thrown
-            if (bBallThrown == false)
+            if (isBallThrown == false)
             {
                 //Increment Adjuster
-                if (Keyboard.IsKeyDown(Key.Q))
+                if (Keyboard.IsKeyDown(Key.Q) && !Keyboard.IsKeyToggled(Key.CapsLock))
                 { fIncrements -= 0.1f; }
-                else if (Keyboard.IsKeyDown(Key.E))
+                else if (Keyboard.IsKeyDown(Key.E) && !Keyboard.IsKeyToggled(Key.CapsLock))
                 { fIncrements += 0.2f; }
                 fIncrements = GameUtils.Constrain(fIncrements, fMinIncrements, fMaxIncrements);
 
                 //Adjust Power and Angle modified by Increments
                 fLineLength = vModLine.GetLength();
-                dPower = (Math.Truncate(fLineLength * 100.0) / 100.0);
-                dPower *= 10;
-                if (Keyboard.IsKeyDown(Key.W) && (dPower < 100))
+                power = (Math.Truncate(fLineLength * 100.0) / 100.0);
+                power *= 10;
+
+
+                if (Keyboard.IsKeyDown(Key.W) && (power < 100) && !Keyboard.IsKeyToggled(Key.CapsLock))
                 {
 
-                        fAimAngle = Math.Atan((vModLine.y) / (vModLine.x) );
-                        vModLine.x += fIncrements * (float)Math.Cos(fAimAngle);
-                        vModLine.y += fIncrements * (float)Math.Sin(fAimAngle);
+                        aimAngle = Math.Atan((vModLine.y) / (vModLine.x) );
+                        vModLine.x += fIncrements * (float)Math.Cos(aimAngle);
+                        vModLine.y += fIncrements * (float)Math.Sin(aimAngle);
                 }
-                if (Keyboard.IsKeyDown(Key.S) && (dPower > 10))
+                if (Keyboard.IsKeyDown(Key.S) && (power > 10) && !Keyboard.IsKeyToggled(Key.CapsLock))
                 {
-                    fAimAngle = Math.Atan((vModLine.y) / (vModLine.x));
-                    vModLine.x -= fIncrements * (float)Math.Cos(fAimAngle);
-                    vModLine.y -= fIncrements * (float)Math.Sin(fAimAngle);
+                    aimAngle = Math.Atan((vModLine.y) / (vModLine.x));
+                    vModLine.x -= fIncrements * (float)Math.Cos(aimAngle);
+                    vModLine.y -= fIncrements * (float)Math.Sin(aimAngle);
                 }
-                if (Keyboard.IsKeyDown(Key.D))
+                if (Keyboard.IsKeyDown(Key.D) && !Keyboard.IsKeyToggled(Key.CapsLock))
                 {
-                    fAimAngle = Math.Atan(vModLine.y / vModLine.x);
-                    fAimAngle -= (Math.PI / 180) + ((Math.PI / 90) * fIncrements);
-                    vModLine.x = fLineLength * (float)Math.Cos(fAimAngle);
-                    vModLine.y = fLineLength * (float)Math.Sin(fAimAngle);
+                    aimAngle = Math.Atan(vModLine.y / vModLine.x);
+                    aimAngle -= (Math.PI / 180) + ((Math.PI / 90) * fIncrements);
+                    vModLine.x = fLineLength * (float)Math.Cos(aimAngle);
+                    vModLine.y = fLineLength * (float)Math.Sin(aimAngle);
                 }
-                if (Keyboard.IsKeyDown(Key.A))
+                if (Keyboard.IsKeyDown(Key.A) && !Keyboard.IsKeyToggled(Key.CapsLock))
                 {
-                    fAimAngle = Math.Atan(vModLine.y / vModLine.x);
-                    fAimAngle += (Math.PI/180) + ((Math.PI / 90) * fIncrements);
-                    vModLine.x = fLineLength * (float)Math.Cos(fAimAngle);
-                    vModLine.y = fLineLength * (float)Math.Sin(fAimAngle);
+                    aimAngle = Math.Atan(vModLine.y / vModLine.x);
+                    aimAngle += (Math.PI/180) + ((Math.PI / 90) * fIncrements);
+                    vModLine.x = fLineLength * (float)Math.Cos(aimAngle);
+                    vModLine.y = fLineLength * (float)Math.Sin(aimAngle);
                 }
             }
 
             //Play Ball
             if (Keyboard.IsKeyDown(Key.Space))
             {
-                if (bSpaceHeld == false)
-                bBallThrown = true;
-                bSpaceHeld = true;
+                if (isSpaceHeld == false)
+                isBallThrown = true;
+                isSpaceHeld = true;
             }
                 
             //Restart
-            if (Keyboard.IsKeyDown(Key.R) && (iCounter < iMaxCounter))
+            if (Keyboard.IsKeyDown(Key.R) && (curCounter < maxCounter))
             {
-                 iCounter = -2;
+                 curCounter = -2;
             }
 
             //Line Visibility
@@ -413,55 +444,80 @@ namespace basketball_game
             //Force Random
             if (Keyboard.IsKeyDown(Key.X))
             {
-                fRandom = (float)Randomizer.Generate(-10, 10);
-                fGaussian = (float)Randomizer.Gaussian(1, 2);
-                iCounter = -2;
+                randNorm = (float)Randomizer.Generate(-10, 10);
+                randGaussian = (float)Randomizer.Gaussian(1, 2);
+                curCounter = -2;
             }
 
             //Add Score Cheat
             if (Keyboard.IsKeyDown(Key.C))
             {
-                fRandom = (float)Randomizer.Generate(-10, 10);
-                fGaussian = (float)Randomizer.Gaussian(1, 2);
-                iCounter = -2;
-                iScore++;
+                randNorm = (float)Randomizer.Generate(-10, 10);
+                randGaussian = (float)Randomizer.Gaussian(1, 2);
+                curCounter = -2;
+                curScore++;
+            }
+
+
+            if (Keyboard.IsKeyDown(Key.Q) && Keyboard.IsKeyToggled(Key.CapsLock))
+            {
+                zoom += 1;
+            }
+            if (Keyboard.IsKeyDown(Key.E) && Keyboard.IsKeyToggled(Key.CapsLock))
+            {
+                zoom -= 1;
+            }
+            if (Keyboard.IsKeyDown(Key.W) && Keyboard.IsKeyToggled(Key.CapsLock))
+            {
+                movementVector.y -= 1;
+            }
+            if (Keyboard.IsKeyDown(Key.S) && Keyboard.IsKeyToggled(Key.CapsLock))
+            {
+                movementVector.y -= -1;
+            }
+            if (Keyboard.IsKeyDown(Key.A) && Keyboard.IsKeyToggled(Key.CapsLock))
+            {
+                movementVector.x -= -1;
+            }
+            if (Keyboard.IsKeyDown(Key.D) && Keyboard.IsKeyToggled(Key.CapsLock))
+            {
+                movementVector.x -= 1;
+            }
+
+            if (Keyboard.IsKeyDown(Key.Escape))
+            {
+                Environment.Exit(0);
             }
             #endregion
 
             #region Text
-            //Get Angle
-            var angle = (Math.Truncate((Math.Atan(vModLine.y / vModLine.x) * 180 / Math.PI) * 100.0) / 100.0);
 
+            var angle = (Math.Truncate((Math.Atan(vModLine.y / vModLine.x) * 180 / Math.PI) * 100.0) / 100.0);
             //Below
-            gl.DrawText(250, 20, 1, 0, 0, "Arial", 20, "Angle: " + angle);
+            //I don't know why this text is corrupted
+            gl.DrawText(99930, 20, 1, 0, 0, "Arial", 10, "Angle: " + angle);
+
+
+            gl.DrawText(230, 20, 1, 0, 0, "Arial", 15, "Angle: " + angle);
             gl.DrawText(400, 5, 1, 0, 0, "Arial", 15, "Increments: " + fIncrements);
-            gl.DrawText(400, 20, 1, 0, 0, "Arial", 20, "Power: " + dPower);
-            gl.DrawText(900, 20, 1, 0, 0, "Arial", 15, "Reset in: " + iCounter);
+            gl.DrawText(400, 20, 1, 0, 0, "Arial", 15, "Power: " + power);
+            gl.DrawText(900, 20, 1, 0, 0, "Arial", 15, "Reset in: " + curCounter);
 
             //Above
-            gl.DrawText(5, 600, 1, 0, 0, "Arial", 30, "Score: " + iScore);
-            gl.DrawText(5, 630, 1, 0, 0, "Arial", 15, "Round: " + iRound);
-            gl.DrawText(5, 660, 1, 0, 0, "Arial", 15, "Ball Position " + Ball.Position);
-            gl.DrawText(5, 690, 1, 0, 0, "Arial", 15, "Distance : " + GameUtils.GetDistanceBetween(Meteor, Ball));
-            gl.DrawText(5, 720, 1, 0, 0, "Arial", 15, "Distance : " + GameUtils.GetAngleBetween(Meteor, Ball));
 
+            gl.DrawText(5, 630, 1, 0, 0, "Arial", 15, "Round: " + curRound);
+            gl.DrawText(5, 600, 1, 0, 0, "Arial", 30, "Score: " + curScore);
+            gl.DrawText(5, 570, 1, 0, 0, "Arial", 20, "Camera Movement Enabled: " + Keyboard.IsKeyToggled(Key.CapsLock).ToString());
 
-            //LENGTH OF LINE
-            //gl.DrawText(5, 690, 1, 0, 0, "Arial", 15, "LENGTH OF LINE: " + Math.Sqrt( (Math.Pow(fModifier.x,2)) + (Math.Pow(fModifier.y, 2)) ) ); 
-
-            if (bWindy == true)
+            if (isWindy == true)
             {
                 gl.DrawText(5, 530, 1, 0, 0, "Arial", 40, "Windy");
             }
 
-            if (bMeteorFell == true)
+            if (isMeteorFall == true)
             {
-                gl.DrawText(5, 430, 1, 0, 0, "Arial", 50, "What's That?!");
+                gl.DrawText(5, 430, 1, 0, 0, "Arial", 30, "What's That?!");
             }
-
-            //gl.DrawText(150, 550, 1, 0, 0, "Arial", 15, "Ball Velocity: x: " + Ball.Velocity.x + " y: " + Ball.Velocity.y);
-            //gl.DrawText(350, 600, 1, 0, 0, "Arial", 15, "Ball in Air: " + fRandom);
-            //gl.DrawText(700, 600, 1, 0, 0, "Arial", 15, fIncrements + " ");
             #endregion
 
             #region Physics and Collision
@@ -471,11 +527,11 @@ namespace basketball_game
                 Ball.Position.y = Ground.Position.y + Ground.Scale.y + Ball.Radius;
                 Ball.ApplyFriction();
 
-                if (bWindy == true)
+                if (isWindy == true)
                 {
-                    Ball.ApplyForce(vRightWind);
+                    Ball.ApplyForce(rightWindVector);
                 }
-                if (bMeteorFell == true)
+                if (isMeteorFall == true)
                 {
                     Ball.ApplyForce(Meteor.CalculateAttraction(Ball));
                 }
@@ -484,11 +540,11 @@ namespace basketball_game
             {
                 Ball.ApplyGravity(0.2f);
                 Ball.ApplyFriction();
-                if (bWindy == true)
+                if (isWindy == true)
                 {
-                    Ball.ApplyForce(vRightWind);
+                    Ball.ApplyForce(rightWindVector);
                 }
-                if (bMeteorFell == true)
+                if (isMeteorFall == true)
                 {
                     Ball.ApplyForce(Meteor.CalculateAttraction(Ball));
                 }
