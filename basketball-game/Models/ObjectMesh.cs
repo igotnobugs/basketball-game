@@ -102,8 +102,9 @@ namespace basketball_game.Models
             UpdateMotion();
         }
 
-        public void DrawLine(OpenGL gl, ObjectMesh origin, Vector3 target, float MultScale = 1.0f)
+        public void DrawLine(OpenGL gl, ObjectMesh origin, Vector3 target, float MultScale = 1.0f, byte r = 28, byte g = 120, byte b = 186)
         {
+            gl.Color(r, g, b);
             gl.Begin(OpenGL.GL_LINE_STRIP);
             gl.Vertex(origin.Position.x, origin.Position.y, origin.Position.z);
             gl.Vertex((origin.Position.x + target.x) * MultScale, (origin.Position.y + target.y) * MultScale, origin.Position.z);
@@ -112,11 +113,12 @@ namespace basketball_game.Models
             UpdateMotion();
         }
 
-        public void DrawBasketBall(OpenGL gl, int Resolution = 50)
+        public void DrawBasketBall(OpenGL gl, int Resolution = 50, byte r = 28, byte g = 120, byte b = 186)
         {
             this.Type = "Circle";
             Resolution = (int)GameUtils.Constrain(Resolution, 10, 100);
             int iRot = this.Rotation;
+            gl.Color(r, g, b);
             //Draw Simple Circle - No Rotation yet
             gl.Begin(OpenGL.GL_LINE_LOOP);
             for (int ii = 0; ii < Resolution; ii++)
