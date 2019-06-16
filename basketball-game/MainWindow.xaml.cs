@@ -1,6 +1,6 @@
-﻿using basketball_game.Models;
-using SharpGL;
+﻿using SharpGL;
 using System;
+using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,68 +15,31 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using basketball_game.Utilities;
-
+using basketball_game.Models;
 
 namespace basketball_game
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+
     public partial class MainWindow : Window
-    {        
-        
+    {
+
         public MainWindow()
         {
             InitializeComponent();
+            this.Loaded += new RoutedEventHandler(delegate (object sender, RoutedEventArgs args)
+            {
+                Top = 0;
+                Left = 50;
+                //Width = 900;
+                //Height = 700;
+                
+            });
         }
 
-        private void OpenGLControl_OpenGLInitialized(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
-        {
-            OpenGL gl = args.OpenGL;
 
-            gl.Enable(OpenGL.GL_DEPTH_TEST);
-           
-            float[] global_ambient = new float[] { 0.5f, 0.5f, 0.5f, 1.0f };
-            float[] light0pos = new float[] { 0.0f, 0.0f, 10.0f, 0.0f };
-            float[] light0ambient = new float[] { 0.2f, 0.2f, 0.2f, 1.0f };
-            float[] light0diffuse = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
-            float[] light0specular = new float[] { 0.8f, 0.8f, 0.8f, 1.0f };
-
-            float[] lmodel_ambient = new float[] { 0.2f, 0.2f, 0.2f, 1.0f };
-            gl.LightModel(OpenGL.GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
-
-            gl.LightModel(OpenGL.GL_LIGHT_MODEL_AMBIENT, global_ambient);
-            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_POSITION, light0pos);
-            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_AMBIENT, light0ambient);
-            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_DIFFUSE, light0diffuse);
-            //gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPECULAR, light0specular);
-            //gl.Enable(OpenGL.GL_LIGHTING);        
-            gl.Enable(OpenGL.GL_LIGHT0);
-            gl.Enable(OpenGL.GL_LINE_SMOOTH);
-
-            gl.ShadeModel(OpenGL.GL_SMOOTH);
-        }
-
-        private void OpenGLControl_Resized(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
-        {
-            //  Get the OpenGL object.
-            OpenGL gl = args.OpenGL;
-
-            //  Set the projection matrix.
-            gl.MatrixMode(OpenGL.GL_PROJECTION);
-
-            //  Load the identity.
-            gl.LoadIdentity();
-
-            //  Create a perspective transformation.
-            gl.Perspective(40.0f, (double)Width / (double)Height, 0.01, 350.0);
-
-            //  Use the 'look at' helper function to position and aim the camera.
-            //gl.LookAt(0, 0, 20.0f, 0, 0, 0, 0, 1, 0);
-
-            //  Set the modelview matrix.
-            gl.MatrixMode(OpenGL.GL_MODELVIEW);
-        }    
                 
         #region Static Objects
         private  ObjectMesh Ground = new ObjectMesh()
@@ -122,6 +85,14 @@ namespace basketball_game
             Rotation = 0
         };
 
+        private ObjectMesh showBall = new ObjectMesh()
+        {
+            Position = new Vector3(0, 10, 50),
+            Radius = 6.0f,
+            Mass = 15,
+            Rotation = 0
+        };
+
         private ObjectMesh Line = new ObjectMesh();
 
         private List<ObjectMesh> Leaves = new List<ObjectMesh>();
@@ -152,6 +123,7 @@ namespace basketball_game
         private Vector3 rightWindVector = new Vector3(-0.2f, 0, 0);
         private Vector3 meteorFallingVector = new Vector3(0, -10.0f, 0);
         public bool enabledMetoer = false;
+        public string gameStage = "Shoot to score";
 
         //Ball Position
         private static Vector3 BallDefaultPos = new Vector3(-40.0f, -25.0f, 50);
@@ -205,22 +177,69 @@ namespace basketball_game
             //Console.WriteLine((mousePos.x)+ " " + (mousePos.y));
         }
 
+
+        private void OpenGLControl_OpenGLInitialized(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
+        {
+
+            OpenGL gl = args.OpenGL;
+
+            //Set Background Color
+            gl.ClearColor(0.7f, 0.7f, 0.9f, 0.0f);
+
+            gl.Enable(OpenGL.GL_DEPTH_TEST);
+            float[] global_ambient = new float[] { 0.5f, 0.5f, 0.5f, 1.0f };
+            float[] light0pos = new float[] { 1.0f, 1.0f, 1.0f, 0.0f };
+            float[] light0ambient = new float[] { 0.0f, 0.0f, 0.0f, 1.0f };
+            float[] light0diffuse = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
+            float[] light0specular = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
+            float[] lmodel_ambient = new float[] { 1.2f, 1.2f, 1.2f, 1.0f };
+            gl.LightModel(OpenGL.GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
+            gl.LightModel(OpenGL.GL_LIGHT_MODEL_AMBIENT, global_ambient);
+
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_POSITION, light0pos);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_AMBIENT, light0ambient);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_DIFFUSE, light0diffuse);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPECULAR, light0specular);
+
+            gl.Enable(OpenGL.GL_LIGHTING);
+            gl.Enable(OpenGL.GL_LIGHT0);
+
+            gl.ColorMaterial(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_AMBIENT_AND_DIFFUSE);
+            gl.Enable(OpenGL.GL_COLOR_MATERIAL);
+
+            gl.Enable(OpenGL.GL_LINE_SMOOTH);
+            gl.ShadeModel(OpenGL.GL_SMOOTH);
+        }
+
+        private void OpenGLControl_Resized(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
+        {
+            OpenGL gl = args.OpenGL;
+            gl.MatrixMode(OpenGL.GL_PROJECTION);
+            gl.LoadIdentity();
+            gl.Perspective(40.0f, (double)Width / (double)Height, 0.01, 350.0);
+
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
+        }
+
         private void OpenGLControl_OpenGLDraw(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
         {
             Title = "basketball-game";
 
-            #region OpenGL Draw 
-            OpenGL gl = args.OpenGL;
 
+            OpenGL gl = args.OpenGL;
             // Clear The Screen And The Depth Buffer
-            gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
-            // Move screen back
+            gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);    
+
             gl.LoadIdentity();
+            //Manipulate Camera
             gl.LookAt(0 - mouseVector.x - movementVector.x, 0 + mouseVector.y - movementVector.y, 20.0f + zoom, 0 - movementVector.x, 0 + mouseVector.y, zoom, 0, 1, 0);
+            //Then Translate
             gl.Translate(0.0f, 10.0f, -150.0f);
 
-            //Draw All Objects
-            Ball.DrawBasketBall(gl, 60, 0, 0, 200);
+
+            //Draw 3D Objects    
+            #region Draw 3D Objects
+            Ball.DrawBasketBall(gl, 60, 0, 0, 0);
             Ground.DrawCube(gl, 0, 120, 0);
             Pole.DrawCube(gl, 100, 100, 100);
             Board.DrawCube(gl, 0, 200, 200);
@@ -228,7 +247,8 @@ namespace basketball_game
 
             RimNet.Draw(gl, 50, 50, 50);
             CenNet.Draw(gl, 40, 40, 40);
-
+            showBall.DrawBasketBall(gl, 60, 0, 0, 200);           
+            
             //Aiming Line Draw
             if (showLine)
             {
@@ -241,13 +261,36 @@ namespace basketball_game
                     Line.DrawLine(gl, Ball, modifierVector, 1, 200, 60, 60);
                 }
             }
+            //End Drawing Most 3D Objects
             #endregion
 
+            #region Draw Text
+
+
+            var angle = (Math.Truncate((Math.Atan(modifierVector.y / modifierVector.x) * 180 / Math.PI) * 100.0) / 100.0);
+            //Above
+            gl.DrawText(5, 630, 1, 0, 0, "Arial", 15, "Round: " + curRound);
+            gl.DrawText(5, 600, 1, 0, 0, "Arial", 30, "Score: " + curScore);
+            gl.DrawText(5, 570, 1, 0, 0, "Arial", 20, "Camera Movement Enabled: " + Keyboard.IsKeyToggled(toggleMovementKey).ToString());
+            gl.DrawText(5, 480, 1, 0, 0, "Arial", 30, gameStage);
+
+            //Below
+            gl.DrawText(230, 20, 1, 0, 0, "Arial", 15, "Angle: " + angle);
+            gl.DrawText(400, 5, 1, 0, 0, "Arial", 15, "Increments: " + increments);
+            gl.DrawText(400, 20, 1, 0, 0, "Arial", 15, "Power: " + power);
+            gl.DrawText(900, 20, 1, 0, 0, "Arial", 15, "Reset in: " + curCounter);
+
+            
+            #endregion
+
+
+            showBall.Rotation += 5;
             #region WINDY Score when > 10
             //WINDY!!!!!!!!!!!!!! --- SCORE > 10
             if (curScore >= 10)
             {
                 isWindy = true;
+                gameStage = "It's a bit windy";
                 ObjectMesh Leave = new ObjectMesh()
                 {
                     Scale = new Vector3(0.5f, 0.5f, 0),
@@ -282,6 +325,7 @@ namespace basketball_game
             #region Meteor Fell Score When > 20
             if ((curScore >= 20) && (enabledMetoer))
             {
+                gameStage = "Some kind of meteor...";
                 Meteor.DrawCircle(gl);
                 Meteor.ApplyForce(meteorFallingVector);
                 if (Meteor.Position.y <= -30)
@@ -315,7 +359,8 @@ namespace basketball_game
                     randGaussian = (float)Randomizer.Gaussian(1, 2);
                     Console.WriteLine("Player Scores!");
                     isScored = true;
-                }
+                } 
+
                 Ball.ApplyForce(RimNet.CalculateDragForce(Ball) * 1);
                 Ball.ApplyForce(CenNet.CalculateDragForce(Ball) * 2);
             }
@@ -360,6 +405,7 @@ namespace basketball_game
                 Ball.Position = BallDefaultPos;
                 randNorm *= 0;
                 randGaussian *= 0;
+                isScored = false;
             }
             #endregion
 
@@ -420,7 +466,6 @@ namespace basketball_game
                 curCounter = -2;
             }
 
-            //Line Visibility
             if (Keyboard.IsKeyToggled(toggleLineKey))
             {
                 showLine = false;
@@ -450,7 +495,7 @@ namespace basketball_game
             if (Keyboard.IsKeyToggled(toggleMovementKey))
             {
                 mouseVector = new Vector3(mousePos.x / (50 * (1 / sensitivity)), mousePos.y / (30 * (1 / sensitivity)), 0);
-                eyex = 0 - mouseVector.x - movementVector.x;
+                eyex = 0 - mouseVector.x + movementVector.x;
                 eyey = 0 + mouseVector.y - movementVector.y;
                 eyez += zoom;
                 cenx = 0 - movementVector.x;
@@ -467,11 +512,13 @@ namespace basketball_game
                 }
                 if (Keyboard.IsKeyDown(upKey))
                 {
-                    movementVector.y -= 1;
+                    //movementVector.y -= 1;
+                    zoom -= 1;
                 }
                 if (Keyboard.IsKeyDown(downKey))
                 {
-                    movementVector.y -= -1;
+                    //movementVector.y -= -1;
+                    zoom += 1;
                 }
                 if (Keyboard.IsKeyDown(leftKey))
                 {
@@ -486,35 +533,6 @@ namespace basketball_game
             if (Keyboard.IsKeyDown(quitKey))
             {
                 Environment.Exit(0);
-            }
-            #endregion
-
-            #region Text
-            var angle = (Math.Truncate((Math.Atan(modifierVector.y / modifierVector.x) * 180 / Math.PI) * 100.0) / 100.0);
-            //Below
-            //I don't know why this text is corrupted, disabling it corrupts everything else
-            gl.DrawText(99930, 20, 1, 0, 0, "Arial", 10, "Angle: " + angle);
-
-
-            gl.DrawText(230, 20, 1, 0, 0, "Arial", 15, "Angle: " + angle);
-            gl.DrawText(400, 5, 1, 0, 0, "Arial", 15, "Increments: " + increments);
-            gl.DrawText(400, 20, 1, 0, 0, "Arial", 15, "Power: " + power);
-            gl.DrawText(900, 20, 1, 0, 0, "Arial", 15, "Reset in: " + curCounter);
-
-            //Above
-
-            gl.DrawText(5, 630, 1, 0, 0, "Arial", 15, "Round: " + curRound);
-            gl.DrawText(5, 600, 1, 0, 0, "Arial", 30, "Score: " + curScore);
-            gl.DrawText(5, 570, 1, 0, 0, "Arial", 20, "Camera Movement Enabled: " + Keyboard.IsKeyToggled(toggleMovementKey).ToString());
-
-            if (isWindy)
-            {
-                gl.DrawText(5, 480, 1, 0, 0, "Arial", 30, "Windy");
-            }
-
-            if (isMeteorFall)
-            {
-                gl.DrawText(5, 430, 1, 0, 0, "Arial", 30, "What's That?!");
             }
             #endregion
 
@@ -580,5 +598,8 @@ namespace basketball_game
             }
             #endregion
         }
+
     }
+
 }
+

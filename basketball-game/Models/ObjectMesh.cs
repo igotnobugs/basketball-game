@@ -13,6 +13,7 @@ namespace basketball_game.Models
         public Vector3 Scale = new Vector3(0.5f, 0.5f, 0.5f);
         public float Radius = 0.5f;
         public string Type = "Cube";
+        public Vector3 directionx = new Vector3();
 
         public ObjectMesh()
         {
@@ -43,6 +44,47 @@ namespace basketball_game.Models
 
         public void DrawCube(OpenGL gl, byte r = 28, byte g = 120, byte b = 186)
         {
+            //Line
+            gl.LineWidth(2);
+            gl.Color(0, 0, 0);
+            gl.Begin(OpenGL.GL_LINE_LOOP);
+            //Front face
+            gl.Vertex(this.Position.x - this.Scale.x, this.Position.y + this.Scale.y, this.Position.z + this.Scale.z);
+            gl.Vertex(this.Position.x - this.Scale.x, this.Position.y - this.Scale.y, this.Position.z + this.Scale.z);
+            gl.Vertex(this.Position.x + this.Scale.x, this.Position.y + this.Scale.y, this.Position.z + this.Scale.z);
+            gl.Vertex(this.Position.x + this.Scale.x, this.Position.y - this.Scale.y, this.Position.z + this.Scale.z);
+
+            //Right face
+            gl.Vertex(this.Position.x + this.Scale.x, this.Position.y + this.Scale.y, this.Position.z - this.Scale.z);
+            gl.Vertex(this.Position.x + this.Scale.x, this.Position.y - this.Scale.y, this.Position.z - this.Scale.z);
+
+            //Back face
+            gl.Vertex(this.Position.x - this.Scale.x, this.Position.y + this.Scale.y, this.Position.z - this.Scale.z);
+            gl.Vertex(this.Position.x - this.Scale.x, this.Position.y - this.Scale.y, this.Position.z - this.Scale.z);
+            //Left face
+
+            gl.Vertex(this.Position.x - this.Scale.x, this.Position.y + this.Scale.y, this.Position.z + this.Scale.z);
+            gl.Vertex(this.Position.x - this.Scale.x, this.Position.y - this.Scale.y, this.Position.z + this.Scale.z);
+
+            gl.End();
+
+            gl.Begin(OpenGL.GL_LINE_LOOP);
+            //Top face      
+            gl.Vertex(this.Position.x - this.Scale.x, this.Position.y + this.Scale.y, this.Position.z + this.Scale.z);
+            gl.Vertex(this.Position.x + this.Scale.x, this.Position.y + this.Scale.y, this.Position.z + this.Scale.z);
+            gl.Vertex(this.Position.x - this.Scale.x, this.Position.y + this.Scale.y, this.Position.z - this.Scale.z);
+            gl.Vertex(this.Position.x + this.Scale.x, this.Position.y + this.Scale.y, this.Position.z - this.Scale.z);
+            gl.End();
+
+            gl.Begin(OpenGL.GL_LINE_LOOP);
+            //Bottom face
+            gl.Vertex(this.Position.x - this.Scale.x, this.Position.y - this.Scale.y, this.Position.z + this.Scale.z);
+            gl.Vertex(this.Position.x + this.Scale.x, this.Position.y - this.Scale.y, this.Position.z + this.Scale.z);
+            gl.Vertex(this.Position.x - this.Scale.x, this.Position.y - this.Scale.y, this.Position.z - this.Scale.z);
+            gl.Vertex(this.Position.x + this.Scale.x, this.Position.y - this.Scale.y, this.Position.z - this.Scale.z);
+            gl.End();
+
+            //POLYGON
             gl.Color(r, g, b);
             gl.Begin(OpenGL.GL_TRIANGLE_STRIP);
             //Front face
@@ -61,15 +103,14 @@ namespace basketball_game.Models
             //Left face
 
             gl.Vertex(this.Position.x - this.Scale.x, this.Position.y + this.Scale.y, this.Position.z + this.Scale.z);
-            gl.Vertex(this.Position.x - this.Scale.x, this.Position.y - this.Scale.y, this.Position.z + this.Scale.z);           
-                
+            gl.Vertex(this.Position.x - this.Scale.x, this.Position.y - this.Scale.y, this.Position.z + this.Scale.z);                       
             gl.End();
 
             gl.Begin(OpenGL.GL_TRIANGLE_STRIP);
             //Top face      
             gl.Vertex(this.Position.x - this.Scale.x, this.Position.y + this.Scale.y, this.Position.z + this.Scale.z);
             gl.Vertex(this.Position.x + this.Scale.x, this.Position.y + this.Scale.y, this.Position.z + this.Scale.z);
-            gl.Color(0, 0, 0);
+            //gl.Color(0, 0, 0);
             gl.Vertex(this.Position.x - this.Scale.x, this.Position.y + this.Scale.y, this.Position.z - this.Scale.z);
             gl.Vertex(this.Position.x + this.Scale.x, this.Position.y + this.Scale.y, this.Position.z - this.Scale.z);
             gl.End();
@@ -82,7 +123,6 @@ namespace basketball_game.Models
             gl.Vertex(this.Position.x + this.Scale.x, this.Position.y - this.Scale.y, this.Position.z - this.Scale.z);
             gl.End();
             
-            gl.End();
             UpdateMotion();
         }
 
@@ -117,10 +157,11 @@ namespace basketball_game.Models
         {
             this.Type = "Circle";
             Resolution = (int)GameUtils.Constrain(Resolution, 10, 100);
-            int iRot = this.Rotation;
+
             gl.Color(r, g, b);
-            //Draw Simple Circle - No Rotation yet
-            gl.Begin(OpenGL.GL_LINE_LOOP);
+
+            //Main Circle
+            gl.Begin(OpenGL.GL_LINE_LOOP);          
             for (int ii = 0; ii < Resolution; ii++)
             {             
                 double angle = 2.0f * Math.PI * ii / Resolution;
@@ -129,60 +170,89 @@ namespace basketball_game.Models
                 gl.Vertex(x + this.Position.x, y + this.Position.y, this.Position.z);
             }
             gl.End();
-            //Draw Line from left tip of circle to right tip. iRot 360 = 0. Convert iRot to rads
-            double iRotRads = 2.0f * Math.PI * iRot / 360;
-            double xx = Radius * Math.Cos(iRotRads);
-            double yy = Radius * Math.Sin(iRotRads);
-            gl.Begin(OpenGL.GL_LINE_STRIP);
-            gl.Vertex(this.Position.x - xx, this.Position.y - yy, this.Position.z);
-            gl.Vertex(this.Position.x + xx, this.Position.y + yy, this.Position.z);       
-            gl.End();
 
-            // Draw Line from top tip of cricle to bottom tip. Starting iRot is 90
-            double iRotRads2 = 2.0f * Math.PI * (iRot + 90) / 360;
-            double xxx = Radius * Math.Cos(iRotRads2);
-            double yyy = Radius * Math.Sin(iRotRads2);
-            gl.Begin(OpenGL.GL_LINE_STRIP);
-            gl.Vertex(this.Position.x + xxx, this.Position.y + yyy, this.Position.z);
-            gl.Vertex(this.Position.x - xxx, this.Position.y - yyy, this.Position.z);
+            //Circle Center
+            gl.PushMatrix();
+            gl.Translate(this.Position.x, this.Position.y, this.Position.z);
+            gl.Rotate(0, 0, this.Rotation);
+            gl.Begin(OpenGL.GL_LINE_LOOP);
+            for (int ii = 0; ii < Resolution; ii++)
+            {
+                double angle = 2.0f * Math.PI * ii / Resolution;
+                double x = Radius * Math.Sin(angle);
+                double z = Radius * Math.Cos(angle);  
+                
+                gl.Vertex(x, 0, z);
+            }
             gl.End();
+            gl.PopMatrix();
 
+ 
+
+            /*
+            gl.PushMatrix();
+            //gl.Translate(this.Position.x, 0, 0);
             //Draw left curve
+            gl.Translate(this.Position.x, this.Position.y, this.Position.z);
+            gl.Rotate(0, 0, this.Rotation);
+            gl.Translate(this.Position.x, this.Position.y, this.Position.z);
             gl.Begin(OpenGL.GL_LINE_STRIP);
             for (int ii = 0; ii < Resolution; ii++)
             {
-                double angle = 2.0f * Math.PI * ii / (Resolution / 2);
-                double x = (Radius/1.5 * Math.Cos(angle));
-                double y = (Radius/1.5 * Math.Sin(angle));
+                double angle = 2.0f * Math.PI * ii / Resolution;
+                double x = Radius * Math.Sin(angle);
+                double z = Radius * Math.Cos(angle);
 
-                Vector3 distanceVector = new Vector3((float)(xx - x), (float)(yy - y), 0);
-                var distance = distanceVector.GetLength();
+                gl.Vertex(x, 0, z);
 
-                if (distance < Radius)
-                {
-                    gl.Vertex(x + this.Position.x - xx, y + this.Position.y - yy, this.Position.z);
-                }
             }
             gl.End();
+            gl.PopMatrix();
+            */
+            //Circle perpendicular to center
+            gl.PushMatrix();
+            gl.Translate(this.Position.x, this.Position.y, this.Position.z);
+            gl.Rotate(0, 0, this.Rotation - 90);
+            gl.Begin(OpenGL.GL_LINE_LOOP);
+            for (int ii = 0; ii < Resolution; ii++)
+            {
+                double angle = 2.0f * Math.PI * ii / Resolution;
+                double x = Radius * Math.Sin(angle);
+                double z = Radius * Math.Cos(angle);
+
+                gl.Vertex(x, 0, z);
+            }
+            gl.End();
+            gl.PopMatrix();
+
+
 
             //Draw Right Curve
             //gl.Begin(OpenGL.GL_LINE_LOOP);
+            /*
             gl.Begin(OpenGL.GL_LINE_STRIP);
             for (int ii = 0; ii < Resolution; ii++)
             {
                 double angle = 2.0f * Math.PI * ii / (Resolution / 2);
                 double x = Radius / 1.5 * Math.Cos(angle);
                 double y = Radius / 1.5 * Math.Sin(angle);
-
-                Vector3 distanceVector = new Vector3((float)(xx + x), (float)(yy + y), 0);
+                Vector3 distanceVector = new Vector3((float)(x), (float)(y), 0);
                 var distance = distanceVector.GetLength();
-
-                if (distance < Radius)
-                {
-                    gl.Vertex(x + this.Position.x + xx, y + this.Position.y + yy, this.Position.z);
-                }
+                gl.Vertex(x, 0, y);
             }
             gl.End();
+            */
+            gl.Color(0.7, 0.5, 0);
+            gl.Begin(OpenGL.GL_POLYGON);
+            for (int ii = 0; ii < Resolution; ii++)
+            {
+                double angle = 2.0f * Math.PI * ii / Resolution;
+                double x = Radius * Math.Cos(angle);
+                double y = Radius * Math.Sin(angle);
+                gl.Vertex(x + this.Position.x, y + this.Position.y, this.Position.z);
+            }
+            gl.End();
+
             UpdateMotion();
 
         }
