@@ -152,6 +152,20 @@ namespace basketball_game.Models
 
             UpdateMotion();
         }
+        
+        public void DrawSimulatedPath(OpenGL gl, ObjectMesh ball, Vector3 target, float MultScale = 1.0f, byte r = 28, byte g = 120, byte b = 186)
+        {
+            gl.Color(r, g, b);
+            gl.Begin(OpenGL.GL_LINE_STRIP);
+            gl.Vertex(ball.Position.x, ball.Position.y, ball.Position.z);
+            for (int i = 0; i < 90; i++)
+            {
+                gl.Vertex(ball.Position.x, ball.Position.y, ball.Position.z);
+            }
+            gl.End();
+            
+        }
+        
 
         public void DrawBasketBall(OpenGL gl, int Resolution = 50, byte r = 28, byte g = 120, byte b = 186)
         {

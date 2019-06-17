@@ -32,14 +32,9 @@ namespace basketball_game
             this.Loaded += new RoutedEventHandler(delegate (object sender, RoutedEventArgs args)
             {
                 Top = 0;
-                Left = 50;
-                //Width = 900;
-                //Height = 700;
-                
+                Left = 50;               
             });
         }
-
-
                 
         #region Static Objects
         private  ObjectMesh Ground = new ObjectMesh()
@@ -85,6 +80,14 @@ namespace basketball_game
             Rotation = 0
         };
 
+        private ObjectMesh simulatedBall = new ObjectMesh()
+        {
+            Position = BallDefaultPos,
+            Radius = 0.0f,
+            Mass = 15,
+            Rotation = 0
+        };
+
         private ObjectMesh showBall = new ObjectMesh()
         {
             Position = new Vector3(0, 10, 50),
@@ -94,6 +97,8 @@ namespace basketball_game
         };
 
         private ObjectMesh Line = new ObjectMesh();
+
+        private ObjectMesh Line2 = new ObjectMesh();
 
         private List<ObjectMesh> Leaves = new List<ObjectMesh>();
 
@@ -133,11 +138,13 @@ namespace basketball_game
         //private bool bShowSimulationLine = false;
         private float lineLength;
         private Vector3 modifierVector = new Vector3(3.0f, 3.0f, 0);
+        private Vector3 simulatedVector = new Vector3(3.0f, 3.0f, 0);
         //private Vector3 fModifier = new Vector3(1.0f, 1.0f, 0);
         private float increments = 0.7f;
         private float minIncrements = 0.3f;
         private float maxIncrements = 1.5f;
         private double aimAngle;
+        private bool isDrawSimulatedPath;
 
         //Camera, View variables
         private Vector3 mousePos = new Vector3();
@@ -247,18 +254,24 @@ namespace basketball_game
 
             RimNet.Draw(gl, 50, 50, 50);
             CenNet.Draw(gl, 40, 40, 40);
-            showBall.DrawBasketBall(gl, 60, 0, 0, 200);           
-            
+            showBall.DrawBasketBall(gl, 60, 0, 0, 200);
+
+            //simulatedBall.DrawCircle(gl, 1);
             //Aiming Line Draw
             if (showLine)
             {
                 if (isBallThrown)
                 {
                     Line.DrawLine(gl, Ball, Ball.Velocity, 1, 200, 60, 60);
+                    //Line.DrawSimulatedPath(gl, Ball, Ball.Velocity, 1, 200, 60, 60);
+
                 }
                 else
                 {
                     Line.DrawLine(gl, Ball, modifierVector, 1, 200, 60, 60);
+
+
+                    //Line2.DrawSimulatedPath(gl, simulatedBall, simulatedVector, 1, 200, 0, 0);
                 }
             }
             //End Drawing Most 3D Objects
@@ -469,10 +482,12 @@ namespace basketball_game
             if (Keyboard.IsKeyToggled(toggleLineKey))
             {
                 showLine = false;
+                isDrawSimulatedPath = false;
             }
             else
             {
                 showLine = true;
+                isDrawSimulatedPath = true;
             }
 
             //Force Random
@@ -537,6 +552,10 @@ namespace basketball_game
             #endregion
 
             #region Physics and Collision
+            //Simulated Ball
+
+
+            //Main Ball
             if (Ball.HasCollidedWith(Ground))
             {
                 Ball.Velocity.y = (-(Ball.Velocity.y) / 2);
