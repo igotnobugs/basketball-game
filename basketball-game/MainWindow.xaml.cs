@@ -254,7 +254,7 @@ namespace basketball_game
 
             RimNet.Draw(gl, 50, 50, 50);
             CenNet.Draw(gl, 40, 40, 40);
-            showBall.DrawBasketBall(gl, 60, 0, 0, 200);
+            //showBall.DrawBasketBall(gl, 60, 0, 0, 200);
 
             //simulatedBall.DrawCircle(gl, 1);
             //Aiming Line Draw
