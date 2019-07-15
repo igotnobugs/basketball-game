@@ -201,28 +201,6 @@ namespace basketball_game.Models
             gl.End();
             gl.PopMatrix();
 
- 
-
-            /*
-            gl.PushMatrix();
-            //gl.Translate(this.Position.x, 0, 0);
-            //Draw left curve
-            gl.Translate(this.Position.x, this.Position.y, this.Position.z);
-            gl.Rotate(0, 0, this.Rotation);
-            gl.Translate(this.Position.x, this.Position.y, this.Position.z);
-            gl.Begin(OpenGL.GL_LINE_STRIP);
-            for (int ii = 0; ii < Resolution; ii++)
-            {
-                double angle = 2.0f * Math.PI * ii / Resolution;
-                double x = Radius * Math.Sin(angle);
-                double z = Radius * Math.Cos(angle);
-
-                gl.Vertex(x, 0, z);
-
-            }
-            gl.End();
-            gl.PopMatrix();
-            */
             //Circle perpendicular to center
             gl.PushMatrix();
             gl.Translate(this.Position.x, this.Position.y, this.Position.z);
@@ -239,23 +217,7 @@ namespace basketball_game.Models
             gl.End();
             gl.PopMatrix();
 
-
-
             //Draw Right Curve
-            //gl.Begin(OpenGL.GL_LINE_LOOP);
-            /*
-            gl.Begin(OpenGL.GL_LINE_STRIP);
-            for (int ii = 0; ii < Resolution; ii++)
-            {
-                double angle = 2.0f * Math.PI * ii / (Resolution / 2);
-                double x = Radius / 1.5 * Math.Cos(angle);
-                double y = Radius / 1.5 * Math.Sin(angle);
-                Vector3 distanceVector = new Vector3((float)(x), (float)(y), 0);
-                var distance = distanceVector.GetLength();
-                gl.Vertex(x, 0, y);
-            }
-            gl.End();
-            */
             gl.Color(0.7, 0.5, 0);
             gl.Begin(OpenGL.GL_POLYGON);
             for (int ii = 0; ii < Resolution; ii++)
@@ -268,7 +230,6 @@ namespace basketball_game.Models
             gl.End();
 
             UpdateMotion();
-
         }
 
         private void UpdateMotion()
