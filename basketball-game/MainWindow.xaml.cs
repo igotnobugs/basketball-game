@@ -29,10 +29,10 @@ namespace basketball_game
         public MainWindow()
         {
             InitializeComponent();
-            this.Loaded += new RoutedEventHandler(delegate (object sender, RoutedEventArgs args)
-            {
-                Top = 0;
-                Left = 50;               
+            Loaded += new RoutedEventHandler(delegate (object sender, RoutedEventArgs args) {
+                //Load directly to the center
+                Top = (SystemParameters.VirtualScreenHeight / 2) - (Height / 2);
+                Left = (SystemParameters.VirtualScreenWidth / 2) - (Width / 2);
             });
         }
                 
@@ -185,46 +185,43 @@ namespace basketball_game
         }
 
 
-        private void OpenGLControl_OpenGLInitialized(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
-        {
-
+        private void OpenGLControl_OpenGLInitialized(object sender, SharpGL.SceneGraph.OpenGLEventArgs args) {
             OpenGL gl = args.OpenGL;
 
-            //Set Background Color
-            gl.ClearColor(0.7f, 0.7f, 0.9f, 0.0f);
-
             gl.Enable(OpenGL.GL_DEPTH_TEST);
-            float[] global_ambient = new float[] { 0.5f, 0.5f, 0.5f, 1.0f };
-            float[] light0pos = new float[] { 1.0f, 1.0f, 1.0f, 0.0f };
-            float[] light0ambient = new float[] { 0.0f, 0.0f, 0.0f, 1.0f };
-            float[] light0diffuse = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
-            float[] light0specular = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
-            float[] lmodel_ambient = new float[] { 1.2f, 1.2f, 1.2f, 1.0f };
-            gl.LightModel(OpenGL.GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
-            gl.LightModel(OpenGL.GL_LIGHT_MODEL_AMBIENT, global_ambient);
 
+            float[] global_ambient = new float[] { 0.5f, 0.5f, 0.5f, 1.0f };
+            float[] light0pos = new float[] { 0.0f, 5.0f, 10.0f, 1.0f };
+            float[] light0ambient = new float[] { 0.2f, 0.2f, 0.2f, 1.0f };
+            float[] light0diffuse = new float[] { 0.3f, 0.3f, 0.3f, 1.0f };
+            float[] light0specular = new float[] { 0.8f, 0.8f, 0.8f, 1.0f };
+
+            float[] lmodel_ambient = new float[] { 0.2f, 0.2f, 0.2f, 1.0f };
+            gl.LightModel(OpenGL.GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
+
+            gl.LightModel(OpenGL.GL_LIGHT_MODEL_AMBIENT, global_ambient);
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_POSITION, light0pos);
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_AMBIENT, light0ambient);
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_DIFFUSE, light0diffuse);
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPECULAR, light0specular);
-
             gl.Enable(OpenGL.GL_LIGHTING);
             gl.Enable(OpenGL.GL_LIGHT0);
 
-            gl.ColorMaterial(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_AMBIENT_AND_DIFFUSE);
-            gl.Enable(OpenGL.GL_COLOR_MATERIAL);
-
-            gl.Enable(OpenGL.GL_LINE_SMOOTH);
             gl.ShadeModel(OpenGL.GL_SMOOTH);
         }
 
-        private void OpenGLControl_Resized(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
-        {
+        private void OpenGLControl_Resized(object sender, SharpGL.SceneGraph.OpenGLEventArgs args) {
+            //  Get the OpenGL object.
             OpenGL gl = args.OpenGL;
+            //  Set the projection matrix.
             gl.MatrixMode(OpenGL.GL_PROJECTION);
+            //  Load the identity.
             gl.LoadIdentity();
-            gl.Perspective(40.0f, (double)Width / (double)Height, 0.01, 350.0);
-
+            //  Create a perspective transformation.
+            gl.Perspective(90.0f, (double)Width / (double)Height, 0.01, 500.0);
+            //  Use the 'look at' helper function to position and aim the camera.
+            gl.LookAt(0, 1.0f, 45.0f, 0, 1.0f, -250.0f, 0, 1, 0);
+            //  Set the modelview matrix.
             gl.MatrixMode(OpenGL.GL_MODELVIEW);
         }
 
@@ -232,17 +229,17 @@ namespace basketball_game
         {
             Title = "basketball-game";
 
-
             OpenGL gl = args.OpenGL;
-            // Clear The Screen And The Depth Buffer
-            gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);    
+            gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
+
+            RenderColor(gl);
+            Render3D(gl);
 
             gl.LoadIdentity();
             //Manipulate Camera
             gl.LookAt(0 - mouseVector.x - movementVector.x, 0 + mouseVector.y - movementVector.y, 20.0f + zoom, 0 - movementVector.x, 0 + mouseVector.y, zoom, 0, 1, 0);
             //Then Translate
-            gl.Translate(0.0f, 10.0f, -150.0f);
-
+            gl.Translate(0.0f, 10.0f, -50.0f);
 
             //Draw 3D Objects    
             #region Draw 3D Objects
@@ -254,7 +251,6 @@ namespace basketball_game
 
             RimNet.Draw(gl, 50, 50, 50);
             CenNet.Draw(gl, 40, 40, 40);
-            //showBall.DrawBasketBall(gl, 60, 0, 0, 200);
 
             //simulatedBall.DrawCircle(gl, 1);
             //Aiming Line Draw
@@ -262,16 +258,14 @@ namespace basketball_game
             {
                 if (isBallThrown)
                 {
-                    Line.DrawLine(gl, Ball, Ball.Velocity, 1, 200, 60, 60);
-                    //Line.DrawSimulatedPath(gl, Ball, Ball.Velocity, 1, 200, 60, 60);
+                    //Line.DrawLine(gl, Ball, Ball.Velocity, 1, 200, 60, 60);
+                    Line.DrawSimulatedPath(gl, Ball, Ball.Velocity, 1, 200, 60, 60);
 
                 }
                 else
                 {
-                    Line.DrawLine(gl, Ball, modifierVector, 1, 200, 60, 60);
-
-
-                    //Line2.DrawSimulatedPath(gl, simulatedBall, simulatedVector, 1, 200, 0, 0);
+                    //Line.DrawLine(gl, Ball, modifierVector, 1, 200, 60, 60);
+                    Line2.DrawSimulatedPath(gl, simulatedBall, simulatedVector, 1, 200, 0, 0);
                 }
             }
             //End Drawing Most 3D Objects
@@ -616,6 +610,65 @@ namespace basketball_game
                 Ball.Velocity.x = (-(Ball.Velocity.x) / 1.5f);
             }
             #endregion
+        }
+
+        private void RenderColor(OpenGL gl) {
+            //Set Background Color
+            gl.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+            gl.Enable(OpenGL.GL_DEPTH_TEST);
+            gl.Enable(OpenGL.GL_LIGHTING);
+            gl.Enable(OpenGL.GL_LIGHT0);
+
+            float[] global_ambient = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
+            float[] light0pos = new float[] { 50.0f, 10.0f, 6.0f, 1.0f };
+            float[] light0ambient = new float[] { 1.0f, 1.0f, 1.0f, 0.5f };
+            float[] light0diffuse = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
+            float[] light0specular = new float[] { 0.0f, 0.0f, 1.0f, 1.0f };
+            float[] lmodel_ambient = new float[] { 1.2f, 1.2f, 1.2f, 1.0f };
+
+            gl.LightModel(OpenGL.GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
+            gl.LightModel(OpenGL.GL_LIGHT_MODEL_AMBIENT, global_ambient);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_POSITION, light0pos);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_AMBIENT, light0ambient);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_DIFFUSE, light0diffuse);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPECULAR, light0specular);
+
+            gl.ColorMaterial(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_AMBIENT_AND_DIFFUSE);
+            gl.Enable(OpenGL.GL_COLOR_MATERIAL);
+
+            gl.ShadeModel(OpenGL.GL_SMOOTH);
+            gl.Enable(OpenGL.GL_LINE_SMOOTH);
+
+            gl.BlendFunc(OpenGL.GL_SRC_ALPHA, OpenGL.GL_ONE_MINUS_SRC_ALPHA);
+            gl.Enable(OpenGL.GL_BLEND);
+        }
+
+        public void Render3D(OpenGL gl) {
+            //  Set the projection matrix.
+            gl.MatrixMode(OpenGL.GL_PROJECTION);
+            //  Load the identity.
+            gl.LoadIdentity();
+            //  Create a perspective transformation.
+            gl.Perspective(90.0f, (double)Width / (double)Height, 0.01, 700.0);
+            //  Use the 'look at' helper function to position and aim the camera.
+            gl.LookAt(0, 1.0f, 45.0f, 0, 1.0f, -250.0f, 0, 1, 0);
+            //  Set the modelview matrix.
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
+        }
+
+        public void Render2D(OpenGL gl) {
+            gl.LoadIdentity();
+            //  Set the projection matrix.
+            gl.MatrixMode(OpenGL.GL_PROJECTION);
+            //  Load the identity.
+            gl.LoadIdentity();
+            //  Create a perspective transformation.
+            gl.Ortho(0, Width, Height, 0, 0, 100);
+            //  Use the 'look at' helper function to position and aim the camera.
+            gl.LookAt(0, 1.0f, 45.0f, 0, 1.0f, -250.0f, 0, 1, 0);
+            //  Set the modelview matrix.
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
         }
 
     }
